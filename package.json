@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "functional utilities collection",
   "scripts": {
+    "compile": "rm -rf ./dist && tsc -p ./ts-config.json",
   },
   "author": "Rafe Lepre",
   "license": "MIT",
