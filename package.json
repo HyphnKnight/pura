@@ -1,0 +1,12 @@
+{
+  "name": "pura",
+  "version": "0.0.1",
+  "description": "functional utilities collection",
+  "scripts": {
+  },
+  "author": "Rafe Lepre",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^2.7.1"
+  }
+}
