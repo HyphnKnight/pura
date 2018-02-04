@@ -1,6 +1,6 @@
 {
   "name": "pura",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "functional utilities collection",
   "scripts": {
     "deploy": "node deploy.js",
