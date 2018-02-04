@@ -39,6 +39,7 @@ async function deploy() {
     await exec(`npm run compile`);
   } catch (e) {
     console.log(`Deploy failed, can not deploy the build failed.`);
+    console.log(e);
     // process.exit(0);
   }
   let version;
@@ -47,12 +48,14 @@ async function deploy() {
     version = JSON.parse(packageStr).version;
   } catch (e) {
     console.log(`Deploy failed, unable to read the package.json`);
+    console.log(e);
     process.exit(0);
   }
   try {
     await exec(`git checkout master`);
   } catch (e) {
     console.log(`Deploy failed, unable to switch to the master branch.`);
+    console.log(e);
     process.exit(0);
   }
   try {
@@ -60,12 +63,14 @@ async function deploy() {
     const package = JSON.parse(packageStr);
     if (version === package.version) {
       console.log(`Deploy failed, new version is the same as the old version.`);
+      console.log(e);
       process.exit(0);
     }
     package.version = version;
     await writeFile('./package.json', JSON.stringify(package));
   } catch (e) {
     console.log(`Deploy failed, unable to read/write package.json on the master branch.`);
+    console.log(e);
     process.exit(0);
   }
   try {
@@ -78,6 +83,7 @@ async function deploy() {
     console.log(`Deploy failed, unable to move files during the build.`);
     await exec(`git reset HEAD --hard`);
     await exec(`git checkout dev`);
+    console.log(e);
     process.exit(0);
   }
   console.log(`Deploy Succeeded, version ${version} is now live.`);
