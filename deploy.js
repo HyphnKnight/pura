@@ -39,7 +39,7 @@ async function deploy() {
     await exec(`npm run compile`);
   } catch (e) {
     console.log(`Deploy failed, can not deploy the build failed.`);
-    process.exit(0);
+    // process.exit(0);
   }
   let version;
   try {
