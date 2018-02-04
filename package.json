@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "functional utilities collection",
   "scripts": {
+    "deploy": "node deploy.js",
     "compile": "rm -rf ./dist && tsc -p ./ts-config.json",
     "ts-node": "TS_NODE_COMPILER_OPTIONS=\"{\\\"module\\\":\\\"commonjs\\\"}\" ts-node",
     "test": "npm run ts-node ./tests/index.ts"
