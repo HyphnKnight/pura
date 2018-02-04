@@ -76,7 +76,7 @@ async function deploy() {
   try {
     await exec(`mv ./dist/** ./`);
     await exec(`git add .`);
-    await exec(`git commit -m 'version@${version}`);
+    await exec(`git commit -m 'version@${version}'`);
     await exec(`git push origin master`);
     await exec(`git checkout dev`);
   } catch (e) {
