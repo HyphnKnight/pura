@@ -49,7 +49,6 @@ async function deploy() {
     await exec(`npm run lint`);
   } catch (e) {
     logError(`Deploy failed, can not deploy while there are lint errors.`);
-    console.log(e);
     process.exit(0);
   }
   try {
@@ -57,7 +56,6 @@ async function deploy() {
     await exec(`npm run compile`);
   } catch (e) {
     logError(`Deploy failed, can not deploy the build failed.`);
-    console.log(e);
     process.exit(0);
   }
   let version;
