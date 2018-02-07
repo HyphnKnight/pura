@@ -45,6 +45,14 @@ async function deploy() {
     process.exit(0);
   }
   try {
+    console.log(`Linting Pura.`)
+    await exec(`npm run lint`);
+  } catch (e) {
+    logError(`Deploy failed, can not deploy while there are lint errors.`);
+    console.log(e);
+    process.exit(0);
+  }
+  try {
     console.log(`Compiling Pura.`)
     await exec(`npm run compile`);
   } catch (e) {

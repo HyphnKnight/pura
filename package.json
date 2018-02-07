@@ -6,12 +6,16 @@
     "deploy": "node deploy.js",
     "compile": "rm -rf ./dist && tsc -p ./ts-config.json",
     "ts-node": "TS_NODE_COMPILER_OPTIONS=\"{\\\"module\\\":\\\"commonjs\\\"}\" ts-node",
-    "test": "npm run ts-node ./tests/index.ts"
+    "test": "npm run ts-node ./tests/index.ts",
+    "lint": "tslint -p ts-config.json -c ./tslint.json ./src/**/*.ts ./tests/**/*.ts",
+    "lint:fix": "npm run lint -- --fix"
   },
   "author": "Rafe Lepre",
   "license": "MIT",
   "devDependencies": {
     "ts-node": "^4.1.0",
+    "tslint": "^5.9.1",
+    "tslint-eslint-rules": "^4.1.1",
     "typescript": "^2.8.0-dev.20180206"
   }
 }
