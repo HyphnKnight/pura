@@ -1,7 +1,21 @@
-import { filter, forEach, map, unique } from '../array';
-import { isBoolean, isString } from '../is/type';
+import {
+  filter,
+  forEach,
+  map,
+  unique,
+} from '../array';
+import {
+  isBoolean,
+  isString,
+} from '../is/type';
 import { attachEvent } from './events';
-import { EventCallback, HTMLTag, isHTMLTag, isTag, Tag } from './html';
+import {
+  EventCallback,
+  HTMLTag,
+  isHTMLTag,
+  isTag,
+  Tag,
+} from './types';
 
 
 const getAttributes =
@@ -12,50 +26,6 @@ const getAttributes =
       (node) => result[node.nodeName] = node.nodeValue || '',
     );
     return result;
-  };
-
-const renderTagToElement =
-  (tag: Tag, el: HTMLElement): void => {
-    forEach(
-      unique([
-        ...Object.keys(getAttributes(el as HTMLElement)),
-        ...Object.keys(tag.attributes),
-      ]),
-      (propName) => {
-        if (typeof tag.attributes[propName] === 'undefined') {
-          (el as HTMLElement).removeAttribute(propName);
-        } else if (propName.toLowerCase().slice(0, 1) === 'on') {
-          attachEvent(el as HTMLElement, propName.slice(2).toLowerCase(), tag.attributes[propName] as EventCallback);
-        } else if (isBoolean(tag.attributes[propName])) {
-          if (!tag.attributes[propName] && !!(el as HTMLElement).getAttribute(propName)) {
-            (el as HTMLElement).removeAttribute(propName);
-          } else if (tag.attributes[propName] && !(el as HTMLElement).getAttribute(propName)) {
-            (el as HTMLElement).setAttribute(propName, String(tag.attributes[propName]));
-          }
-        } else if ((el as HTMLElement).getAttribute(propName) !== String(tag.attributes[propName])) {
-          (el as HTMLElement).setAttribute(propName, String(tag.attributes[propName]));
-        }
-      }
-    );
-    forEach(
-      tag.children,
-      (childTag, index) => render(childTag, el as HTMLElement, index),
-    );
-    let i = el.childNodes.length - tag.children.length;
-    while (i-- > 0) {
-      if (el.lastChild) (el.lastChild as HTMLElement).remove();
-    }
-  };
-
-export const renderToElement =
-  (tag: Tag, target: HTMLElement = document.body): HTMLElement => {
-    if (tag.name.toLowerCase() !== target.nodeName.toLowerCase()) {
-      throw new Error(`Single Render attempting to render a ${target.nodeName} as ${tag.name}`);
-    } else if (target.id !== '' && (tag.attributes.id || '') !== target.id) {
-      throw new Error(`Single render attempting to render tag with id #${tag.attributes.id} to an element with the id of #${target.id}`);
-    }
-    renderTagToElement(tag, target);
-    return target;
   };
 
 // This is ok because this will only ever come from one location.
@@ -78,49 +48,100 @@ export const renderToBody =
       tag.children.push(...scriptCache);
     }
 
-    renderToElement(tag, document.body);
+    render(tag, document.body);
 
     return document.body;
   };
 
+const applyTagPropsToElement =
+  (tag: Tag, target: HTMLElement) => {
+    forEach(
+      unique([
+        ...Object.keys(getAttributes(target)),
+        ...Object.keys(tag.attributes),
+      ]),
+      (propName) => {
+        if (typeof tag.attributes[propName] === 'undefined') {
+          target.removeAttribute(propName);
+        } else if (propName.toLowerCase().slice(0, 1) === 'on') {
+          attachEvent(target, propName.slice(2).toLowerCase(), tag.attributes[propName] as EventCallback);
+        } else if (isBoolean(tag.attributes[propName])) {
+          if (!tag.attributes[propName] && !!target.getAttribute(propName)) {
+            target.removeAttribute(propName);
+          } else if (tag.attributes[propName] && !target.getAttribute(propName)) {
+            target.setAttribute(propName, String(tag.attributes[propName]));
+          }
+        } else if (target.getAttribute(propName) !== String(tag.attributes[propName])) {
+          target.setAttribute(propName, String(tag.attributes[propName]));
+        }
+      }
+    );
+    return target;
+  };
+
 export const render =
-  (tag: Tag | HTMLTag | string, parent: HTMLElement = document.body, index: number = 0): HTMLElement => {
-    let el = parent.childNodes[index];
-    if (isString(tag)) {
-      if (el && el.nodeType === Node.TEXT_NODE) {
-        if (tag !== '') {
-          if (el.nodeValue !== tag) el.nodeValue = tag;
-        } else {
-          (el as HTMLElement).remove();
-        }
-      } else if (tag !== '') {
-        el = document.createTextNode(tag);
-        const childNodes = [...parent.childNodes];
-        while (childNodes[index]) {
-          const removeEl = childNodes.pop();
-          if (removeEl) (removeEl as HTMLElement).remove();
-        }
-        parent.appendChild(el);
-      }
-    } else if (isTag(tag)) {
-      if (!el || el.nodeType !== Node.ELEMENT_NODE || (el as HTMLElement).tagName.toLowerCase() !== tag.name.toLowerCase()) {
-        el = document.createElement(tag.name);
-        const childNodes = [...parent.childNodes];
-        while (childNodes[index]) {
-          const removeEl = childNodes.pop();
-          if (removeEl) (removeEl as HTMLElement).remove();
-        }
-        parent.appendChild(el);
-      }
-      renderTagToElement(tag, (el as HTMLElement));
-    } else if (isHTMLTag(tag) && tag.element !== el) {
-      const childNodes = [...parent.childNodes];
-      while (childNodes[index]) {
-        const removeEl = childNodes.pop();
-        if (removeEl) (removeEl as HTMLElement).remove();
-      }
-      parent.appendChild(tag.element);
-      return tag.element;
+  (tag: Tag, target: HTMLElement): HTMLElement => {
+    if (tag.name !== target.nodeName) {
+      throw new Error(`Render attempting to render a ${target.nodeName} as ${tag.name}`);
+    } else if (target.id !== '' && (tag.attributes.id || '') !== target.id) {
+      throw new Error(`Render attempting to render tag with id #${tag.attributes.id} to an element with the id of #${target.id}`);
     }
-    return el as HTMLElement;
+    applyTagPropsToElement(tag, target);
+    let activeTags: Array<[HTMLElement, Tag['children']]> = [
+      [target, tag.children],
+    ];
+    while (activeTags.length) {
+      const nextTags: Array<[HTMLElement, Tag['children']]> = [];
+      let atIndex = -1;
+      while (++atIndex < activeTags.length) {
+        const [parent, childTags] = activeTags[atIndex];
+        const childNodes = [...parent.childNodes] as HTMLElement[];
+        let childTagIndex = -1;
+        while (++childTagIndex < childTags.length) {
+          const childTag = childTags[childTagIndex];
+          const childElement = childNodes[childTagIndex];
+          if (isString(tag)) {
+            if (childElement && childElement.nodeType === Node.TEXT_NODE) {
+              if (tag !== '') {
+                if (childElement.nodeValue !== tag) childElement.nodeValue = tag;
+              } else {
+                childElement.remove();
+              }
+            } else {
+              while (childNodes[childTagIndex]) {
+                const removeEl = childNodes.pop();
+                if (removeEl) (removeEl as HTMLElement).remove();
+              }
+              if (tag !== '') {
+                parent.appendChild(document.createTextNode(tag));
+              }
+            }
+          } else if (isTag(childTag)) {
+            let tagRef = childElement;
+            if (!childElement || childElement.nodeType !== Node.ELEMENT_NODE || childElement.tagName !== childTag.name) {
+              while (childNodes[childTagIndex]) {
+                const removeEl = childNodes.pop();
+                if (removeEl) (removeEl as HTMLElement).remove();
+              }
+              tagRef = document.createElement(childTag.name);
+            }
+            applyTagPropsToElement(childTag, tagRef);
+            if (childTag.children.length) {
+              nextTags.push([
+                childElement,
+                childTag.children,
+              ]);
+            }
+          } else if (isHTMLTag(childTag) && childTag.element !== childElement) {
+            while (childNodes[childTagIndex]) {
+              const removeEl = childNodes.pop();
+              if (removeEl) (removeEl as HTMLElement).remove();
+            }
+            parent.appendChild(childTag.element);
+          }
+        }
+      }
+      activeTags = nextTags;
+    }
+    return target;
   };

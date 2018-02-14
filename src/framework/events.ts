@@ -1,4 +1,5 @@
-import { EventCallback } from './html';
+import { EventCallback } from './types';
+
 const events: Map<string, Map<HTMLElement, EventCallback>> = new Map();
 
 export const attachEvent =
@@ -16,7 +17,7 @@ export const attachEvent =
   };
 
 export const auditEvents =
-  (parent: HTMLElement) =>
+  (parent: HTMLElement = document.body) =>
     events.forEach(
       (eventMap) =>
         eventMap.forEach(
