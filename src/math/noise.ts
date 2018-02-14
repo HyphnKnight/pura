@@ -67,15 +67,15 @@ export function gridNoise(width: number, height: number, iterations: number = 3)
     }
   }
 
-  const allValues = flatten<number>(noise);
+  const allValues = flatten<number>(noiseGrid);
   const min = Math.min.apply(null, allValues);
   const max = Math.max.apply(null, allValues);
 
-  for (let y = noise.length - 1; y >= 0; --y) {
-    for (let x = noise[y].length - 1; x >= 0; --x) {
-      noise[y][x] = (noise[y][x] - min) / (max - min);
+  for (let y = noiseGrid.length - 1; y >= 0; --y) {
+    for (let x = noiseGrid[y].length - 1; x >= 0; --x) {
+      noiseGrid[y][x] = (noiseGrid[y][x] - min) / (max - min);
     }
   }
 
-  return noise;
+  return noiseGrid;
 }

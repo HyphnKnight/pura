@@ -1,4 +1,4 @@
-import { forEach } from '../array';
+import { forEach, map } from '../array';
 import mergeSort from '../array/mergeSort';
 
 export const pathTo =
@@ -14,18 +14,18 @@ export const pathTo =
       const costSoFar = new Map();
       cameFrom.set(start, null);
       costSoFar.set(start, 0);
-      let current = start;
+      let current: [data, number] = frontier[0];
       while (frontier.length) {
         current = frontier.shift() as [data, number];
         const currentCost = costSoFar.get(current);
-        if (current === goal) {
+        if (current[0] === goal) {
           break;
         }
         if (currentCost >= maxResist) {
           return null;
         }
-        forEach(getNeighbors(current), (neighbor) => {
-          const newCost = currentCost + resist(current, neighbor);
+        forEach(getNeighbors(current[0]), (neighbor) => {
+          const newCost = currentCost + resist(current[0], neighbor);
           const oldCost = costSoFar.get(neighbor);
           if (!oldCost || newCost < oldCost) {
             costSoFar.set(neighbor, newCost);
@@ -37,10 +37,10 @@ export const pathTo =
         frontier = mergeSort(frontier, ([, value]) => value);
       }
       const path = [];
-      current = goal;
-      while (current !== start) {
+      let last = goal;
+      while (last !== start) {
         path.unshift(current);
-        current = cameFrom.get(current);
+        last = cameFrom.get(current);
       }
-      return path;
+      return map(path, ([itemData]) => itemData);
     };

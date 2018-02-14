@@ -2,15 +2,15 @@ import { find, forEach as arrayForEach, map, reduce } from '../array';
 
 export interface ObjLit<Value> { [prop: string]: Value; }
 
-export type Iterator<Value, Result> = (value: Value, key: string, obj: objLit<Value>) => Result;
+export type Iterator<Value, Result> = (value: Value, key: string, obj: ObjLit<Value>) => Result;
 
 export const forEach =
-  <Value>(obj: objLit<Value>, func: iterator<Value, void>) =>
+  <Value>(obj: ObjLit<Value>, func: Iterator<Value, void>) =>
     arrayForEach(Object.keys(obj), (key) => func(obj[key], key, obj));
 
 export const mapValues =
-  <Value, Result>(obj: objLit<Value>, func: Iterator<Value, Result>): objLit<Result> =>
-    reduce<string | number, objLit<Result>>(
+  <Value, Result>(obj: ObjLit<Value>, func: Iterator<Value, Result>): ObjLit<Result> =>
+    reduce<string | number, ObjLit<Result>>(
       Object.keys(obj),
       (result, key) => {
         result[key] = func(obj[key], key as string, obj);
@@ -20,8 +20,8 @@ export const mapValues =
     );
 
 export const mapKeys =
-  <Value>(obj: objLit<Value>, func: Iterator<Value, string | number>): objLit<Value> =>
-    reduce<string, objLit<Value>>(
+  <Value>(obj: ObjLit<Value>, func: Iterator<Value, string | number>): ObjLit<Value> =>
+    reduce<string, ObjLit<Value>>(
       Object.keys(obj),
       (result, key) => {
         result[func(obj[key], key, obj)] = obj[key];
@@ -31,8 +31,8 @@ export const mapKeys =
     );
 
 export const pick =
-  <Value extends Result, Result>(obj: objLit<Value>, func: Iterator<Value, boolean>): objLit<Result> =>
-    reduce<string | number, objLit<Result>>(
+  <Value extends Result, Result>(obj: ObjLit<Value>, func: Iterator<Value, boolean>): ObjLit<Result> =>
+    reduce<string | number, ObjLit<Result>>(
       Object.keys(obj),
       (result, key) => {
         if (func(obj[key], key as string, obj)) {
@@ -57,11 +57,11 @@ export const copy =
     merge(Object.create(null), obj);
 
 export const mapToArray =
-  <Value, Result>(obj: objLit<Value>, iterator: Iterator<Value, Result>): Result[] =>
+  <Value, Result>(obj: ObjLit<Value>, iterator: Iterator<Value, Result>): Result[] =>
     map(Object.keys(obj), (key) => iterator(obj[key], key as string, obj));
 
 export const pairs =
-  <Value>(obj: objLit<Value>): Array<[string, Value]> =>
+  <Value>(obj: ObjLit<Value>): Array<[string, Value]> =>
     map<string, [string, Value]>(
       Object.keys(obj) as string[],
       (key) => ([key, obj[key]])
