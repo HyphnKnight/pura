@@ -8,25 +8,25 @@ export const getReachable =
   ) =>
     (start: data, maxResist: number = Infinity): data[] => {
       const result: data[] = [];
-      let frontier: data[] = [start];
-      const cost_so_far = new Map();
-      cost_so_far.set(start, 0);
+      const frontier: data[] = [start];
+      const costSoFar = new Map();
+      costSoFar.set(start, 0);
       let current = start;
       while (frontier.length) {
         current = frontier.shift() as data;
-        const current_cost = cost_so_far.get(current);
-        if (current_cost >= maxResist) break;
+        const currentCost = costSoFar.get(current);
+        if (currentCost >= maxResist) break;
         result.push(current);
         const neighbors = getNeighbors(current);
         frontier.push(
-          ...filter(neighbors, neighbor => {
-            if (cost_so_far.get(neighbor)) return false;
-            const new_cost = current_cost + resist(current, neighbor);
-            cost_so_far.set(neighbor, new_cost)
-            return new_cost <= maxResist;
+          ...filter(neighbors, (neighbor) => {
+            if (costSoFar.get(neighbor)) return false;
+            const newCost = currentCost + resist(current, neighbor);
+            costSoFar.set(neighbor, newCost);
+            return newCost <= maxResist;
           })
         );
-        mergeSort(frontier, (value) => cost_so_far.get(value));
+        mergeSort(frontier, (value) => costSoFar.get(value));
       }
       return result;
     };

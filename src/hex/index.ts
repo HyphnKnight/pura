@@ -1,6 +1,6 @@
-import { Vector2d } from '../vector';
-import { map, flatten, filter, any } from '../array';
+import { any, filter, flatten, map } from '../array';
 import { lerp as nLerp } from '../math';
+import { Vector2d } from '../vector';
 
 export type Hex = [
   // Also a 3d Vector
@@ -62,7 +62,7 @@ export const vector2dToHex =
     const hex: Hex = [0, 0, 0];
     hex[0] = x * Math.sqrt(3) / 3 - y / 3;
     hex[1] = y * 2 / 3;
-    hex[2] = -(hex[0] + hex[1])
+    hex[2] = -(hex[0] + hex[1]);
     return roundHex(hex);
   };
 
@@ -142,7 +142,7 @@ export const lerpGrid =
 export const lineFromTo =
   (src: Hex, dest: Hex): Hex[] => {
     const distance = distanceFromTo(src, dest);
-    const path: Hex[] = []
+    const path: Hex[] = [];
     for (let i = 0; i < distance; ++i) {
       path[i] = roundHex(lerp(src, dest, (i + 1) / distance));
     }
@@ -153,7 +153,7 @@ export const lineFromToGrid =
   (grid: Hex[][]) =>
     (src: Hex, dest: Hex): Hex[] | null => {
       const distance = distanceFromTo(src, dest);
-      const path: Hex[] = []
+      const path: Hex[] = [];
       let i = -1;
       while (++i < distance) {
         const hex = get(grid)(roundHex(lerp(src, dest, (i + 1) / distance)));
@@ -176,12 +176,12 @@ export const getWithin =
       }
     }
     return hexes;
-  }
+  };
 
 export const getWithinGrid =
   (grid: Hex[][]) =>
     (hex: Hex, radius: number): Hex[] => {
-      const hexes: (Hex | null)[] = [];
+      const hexes: Array<Hex | null> = [];
       for (let dx = -radius; dx <= radius; ++dx) {
         const limit = Math.min(radius, -dx + radius);
         for (let dy = Math.max(-radius, -dx - radius); dy <= limit; ++dy) {
@@ -220,7 +220,7 @@ export const getSpiral =
       results.push(getRing(hex, i));
     }
     return flatten(results);
-  }
+  };
 
 export const getSpiralGrid =
   (grid: Hex[][]) =>
@@ -245,13 +245,13 @@ export const getFieldOfViewGrid =
           if (!isBlocked(tHex)) return false;
           const line = lineFromToGrid(grid)(hex, tHex);
           if (!line) return false;
-          return !any(line, isBlocked)
+          return !any(line, isBlocked);
         }
       );
 
 export const generateGrid =
   (radius: number): Hex[][] => {
-    let rows = radius * 2 + 1;
+    const rows = radius * 2 + 1;
     const grid: Hex[][] = [];
     for (let y = 0; y < rows; ++y) {
       const row = y <= radius

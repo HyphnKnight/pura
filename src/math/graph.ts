@@ -1,4 +1,4 @@
-import { reduce, countBy, heuristicFind } from '../array';
+import { countBy, heuristicFind, reduce } from '../array';
 import mergeSort from '../array/mergeSort';
 
 const mergeFind = heuristicFind(mergeSort);
@@ -10,7 +10,7 @@ export const mean =
 export const mode =
   <type>(array: type[], func: (val: type) => number) => {
     const count = countBy(array, func);
-    return mergeFind(Object.keys(count), key => count[key]);
+    return mergeFind(Object.keys(count), (key) => count[key]);
   };
 
 export const median =

@@ -6,7 +6,7 @@ export { tag, Tag } from './html';
  * The proper way to build modules is to create a tag and
  * render it to an html element and then export that element
  * to be embedded in the project later.
- * 
+ *
  * This prevents multiple unnecessary rerenders and restructures.
  */
 

@@ -1,24 +1,24 @@
-import { Vector2d, rotateSet, scaleSet, magnitudeSqr } from '../vector';
-import { VectorList, subtractListSet, averageList, rotateList, addListSet, forEachList } from '../vector/list';
-import { times, flatten } from '../array';
+import { flatten, times } from '../array';
+import { magnitudeSqr, rotateSet, scaleSet, Vector2d } from '../vector';
+import { addListSet, averageList, forEachList, rotateList, subtractListSet, VectorList } from '../vector/list';
 
 /* Type Declarations */
 
 export enum Shape {
-  Point = "Point",
-  Circle = "Circle",
-  Rectangle = "Rectangle",
-  Polygon = "Polygon",
+  Point = 'Point',
+  Circle = 'Circle',
+  Rectangle = 'Rectangle',
+  Polygon = 'Polygon',
 }
 
-export type Point = {
+export interface Point {
   type: Shape.Point;
   position: Vector2d;
   rotation: number;
   bounding: 0;
 }
 
-export type Circle = {
+export interface Circle {
   type: Shape.Circle;
   position: Vector2d;
   rotation: number;
@@ -26,7 +26,7 @@ export type Circle = {
   bounding: number;
 }
 
-export type Rectangle = {
+export interface Rectangle {
   type: Shape.Rectangle;
   position: Vector2d;
   rotation: number;
@@ -36,7 +36,7 @@ export type Rectangle = {
   bounding: number;
 }
 
-export type Polygon = {
+export interface Polygon {
   type: Shape.Polygon;
   position: Vector2d;
   rotation: number;
@@ -61,14 +61,14 @@ export const getRectanglePoints = (width: number, height: number): VectorList =>
 
 export const normalizePoints =
   (points: VectorList): VectorList =>
-    subtractListSet(points, averageList(points))
+    subtractListSet(points, averageList(points));
 
 export const createLinesFromPoints =
   (points: VectorList): Line[] => {
     const results: Line[] = [];
     const length = points.length;
     for (let i = 0; i < length; i += 2) {
-      const next = i === length - 1 ? 0 : i + 1
+      const next = i === length - 1 ? 0 : i + 1;
       results.push([
         points[i], points[i + 1],
         points[next] - points[i], points[next + 1] - points[i + 1]
@@ -106,13 +106,13 @@ export const createPolygon =
   (position: Vector2d, rotation: number = 0, points: VectorList): Polygon => {
     const adjustedPoints = normalizePoints(points);
     let bounding = 0;
-    forEachList(adjustedPoints, pnt => bounding = Math.max(bounding || magnitudeSqr(pnt)));
+    forEachList(adjustedPoints, (pnt) => bounding = Math.max(bounding || magnitudeSqr(pnt)));
     bounding = Math.sqrt(bounding);
     return {
       type: Shape.Polygon,
       points: adjustedPoints,
       position, rotation, bounding,
-    }
+    };
   };
 
 
@@ -123,7 +123,7 @@ export const createSquare =
 
 export const createEqualLateralPolygonPoints =
   (sides: number, radius: number): VectorList =>
-    flatten(times(sides, i => scaleSet(rotateSet([0, 1], i * (2 * Math.PI / sides)), radius)));
+    flatten(times(sides, (i) => scaleSet(rotateSet([0, 1], i * (2 * Math.PI / sides)), radius)));
 
 export const createEqualLateralPolygon =
   (position: Vector2d, rotation: number, sides: number, radius: number) =>

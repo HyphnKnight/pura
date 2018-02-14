@@ -18,8 +18,8 @@ export const attachEvent =
 export const auditEvents =
   (parent: HTMLElement) =>
     events.forEach(
-      eventMap =>
+      (eventMap) =>
         eventMap.forEach(
-          (_value, el) => !parent.contains(el) && eventMap.delete(el),
+          (_, el) => !parent.contains(el) && eventMap.delete(el),
         )
     );

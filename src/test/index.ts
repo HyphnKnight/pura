@@ -1,5 +1,5 @@
+import { filter, forEach, map } from '../array';
 import { isString } from '../is/type';
-import { map, filter, forEach } from '../array';
 
 const isNode = typeof window === 'undefined';
 
@@ -41,16 +41,16 @@ export const suite =
     try {
       const results = map(
         tests,
-        testDetails => test(testDetails[0], testDetails[1]),
+        (testDetails) => test(testDetails[0], testDetails[1]),
       );
 
-      const correct = filter(results, x => x[0]).length;
+      const correct = filter(results, (x) => x[0]).length;
       const percentage = Math.floor(correct / tests.length * 100);
 
       suiteLog(title, percentage);
       forEach(
         results,
-        result => result[0]
+        (result) => result[0]
           ? success(result[1])
           : fail(result[1], result[2] as string),
       );
@@ -67,16 +67,16 @@ export const suiteAsync =
     try {
       const results = await Promise.all(map(
         tests,
-        testDetails => testAsync(testDetails[0], testDetails[1]),
+        (testDetails) => testAsync(testDetails[0], testDetails[1]),
       ));
 
-      const correct = filter(results, x => x[0]).length;
+      const correct = filter(results, (x) => x[0]).length;
       const percentage = Math.floor(correct / tests.length * 100);
 
       suiteLog(title, percentage);
       forEach(
         results,
-        result => result[0]
+        (result) => result[0]
           ? success(result[1])
           : fail(result[1], result[2] as string),
       );

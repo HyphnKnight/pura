@@ -1,28 +1,26 @@
 import { forEach } from '../array';
-import { uniqueId } from '../string';
 import {
-  isString,
-  isNumber,
-  isFunction,
-  isBoolean,
   isArray,
-  isUndefined,
+  isBoolean,
+  isFunction,
   isNode,
+  isNumber,
+  isString,
+  isUndefined,
 } from '../is/type';
+import { uniqueId } from '../string';
 
-export interface EventCallback {
-  (event: Event): void;
-}
+export type EventCallback = (event: Event) => void;
 
-export type Tag = {
+export interface Tag {
   name: string;
   attributes: {
     [prop: string]: string | number | boolean | EventCallback;
   };
-  children: (Tag | HTMLTag | string)[];
+  children: Array<Tag | HTMLTag | string>;
 }
 
-export type HTMLTag = {
+export interface HTMLTag {
   name: string;
   element: HTMLElement;
 }
@@ -66,19 +64,19 @@ const parseTag =
       result = tagAttributes.exec(tagText);
       if (result) {
         const [attributeText] = result;
-        const [name, valueInQuotes] = attributeText.split('=');
+        const [attributeName, valueInQuotes] = attributeText.split('=');
         if (valueInQuotes) {
           const value = valueInQuotes.slice(1, -1);
-          attributes[name] = eventMap.get(value) || value;
+          attributes[attributeName] = eventMap.get(value) || value;
         } else {
-          attributes[name] = true;
+          attributes[attributeName] = true;
         }
       }
     }
 
     return {
       name, attributes,
-      children: [] as (Tag | string)[],
+      children: [] as Array<Tag | string>,
     };
   };
 
@@ -107,7 +105,7 @@ const parser =
               tagResult = insertedTag.exec(textValue);
               if (tagResult) {
                 const text = textValue.slice(2, tagResult.index);
-                text !== '' && content[content.length - 1].children.push(text);
+                if (text !== '') content[content.length - 1].children.push(text);
                 const tagId = textValue.slice(tagResult.index, tagResult.index + tagResult[0].length);
                 content[content.length - 1].children.push(tags.get(tagId) as Tag);
                 textValue = textValue.slice(tagResult.index + tagResult[0].length);
@@ -138,7 +136,7 @@ const parser =
               tagResult = insertedTag.exec(textValue);
               if (tagResult) {
                 const text = textValue.slice(2, tagResult.index);
-                text !== '' && lastTag.children.push(text);
+                if (text !== '') lastTag.children.push(text);
                 const tagId = textValue.slice(tagResult.index, tagResult.index + tagResult[0].length);
                 lastTag.children.push(tags.get(tagId) as Tag);
                 textValue = textValue.slice(tagResult.index + tagResult[0].length);
@@ -152,7 +150,7 @@ const parser =
           const [endTagName] = endTag.match(/[\w-]+/) as string[];
 
           if (lastTag.name !== endTagName) {
-            throw `${endTagName} is being closed before ${lastTag.name} is has been closed`;
+            throw new Error(`${endTagName} is being closed before ${lastTag.name} is has been closed`);
           }
           if (!content[content.length - 1] && lastTag) {
             openAndCloseTag.lastIndex = -1;
@@ -205,18 +203,18 @@ const parseParameter =
       return html;
     } else if (isNode(parameter)) {
       const tagKey = `tag_${uniqueId()}_`;
-      const HTMLTag: HTMLTag = {
+      const newHTMLTag: HTMLTag = {
         name: (parameter as HTMLElement).tagName,
         element: (parameter as HTMLElement),
       };
-      tags.set(tagKey, HTMLTag);
+      tags.set(tagKey, newHTMLTag);
       return tagKey;
     }
     return null;
-  }
+  };
 
 export const tag =
-  (str: TemplateStringsArray, ...parameters: (ValidInput | ValidInput[])[]) => {
+  (str: TemplateStringsArray, ...parameters: Array<ValidInput | ValidInput[]>) => {
     const events = new Map<string, EventCallback>();
     const tags = new Map<string, Tag | HTMLTag>();
     let htmlText = '';

@@ -26,15 +26,15 @@ export const subtract =
     subtractSet([...vecA] as Vector2d, vecB);
 
 export const scaleSet =
-  (base: Vector2d, scale: number): Vector2d => {
-    base[0] *= scale;
-    base[1] *= scale;
+  (base: Vector2d, scaleValue: number): Vector2d => {
+    base[0] *= scaleValue;
+    base[1] *= scaleValue;
     return base;
   };
 
 export const scale =
-  (vec: Vector2d, scale: number): Vector2d =>
-    scaleSet([...vec] as Vector2d, scale);
+  (vec: Vector2d, scaleValue: number): Vector2d =>
+    scaleSet([...vec] as Vector2d, scaleValue);
 
 export const lerpSet =
   (vecA: Vector2d, vecB: Vector2d, dt: number): Vector2d => {
@@ -80,7 +80,7 @@ export const normalSet =
 
 export const normal =
   (vec: Vector2d): Vector2d =>
-    normalSet([...vec] as Vector2d)
+    normalSet([...vec] as Vector2d);
 
 export const invert =
   (vec: Vector2d): Vector2d =>

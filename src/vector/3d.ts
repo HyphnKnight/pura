@@ -1,4 +1,4 @@
-import { lerp as nLerp, abs, sqr } from '../math';
+import { abs, lerp as nLerp, sqr } from '../math';
 
 export type Vector3d = [number, number, number];
 
@@ -35,16 +35,16 @@ export const subtract =
     subtractSet([...vecA] as Vector3d, vecB);
 
 export const scaleSet =
-  (base: Vector3d, scale: number): Vector3d => {
-    base[0] *= scale;
-    base[1] *= scale;
-    base[2] *= scale;
+  (base: Vector3d, scaleValue: number): Vector3d => {
+    base[0] *= scaleValue;
+    base[1] *= scaleValue;
+    base[2] *= scaleValue;
     return base;
   };
 
 export const scale =
-  (vec: Vector3d, scale: number): Vector3d =>
-    scaleSet([...vec] as Vector3d, scale);
+  (vec: Vector3d, scaleValue: number): Vector3d =>
+    scaleSet([...vec] as Vector3d, scaleValue);
 
 export const lerpSet =
   (vecA: Vector3d, vecB: Vector3d, dt: number): Vector3d => {

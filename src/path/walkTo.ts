@@ -1,8 +1,8 @@
 import { forEach, map } from '../array';
-import quickSort from '../array/quickSort'
-import { createNode, node } from './node';
+import quickSort from '../array/quickSort';
+import { createNode, Node } from './node';
 
-export type WalkToData<data> = {
+export interface WalkToData<data> {
   start: data;
   destination: data;
   getUniqueId: (data: data) => string;
@@ -21,16 +21,16 @@ export function* walkTo<data>(pathingData: WalkToData<data>): IterableIterator<d
 
   if (start === destination) return destination;
 
-  let rootNode: node<data> = createNode<data>(getUniqueId(start), start, 0, priorityFunc(start, destination));
-  let nodes: { [id: string]: node<data> } = { [rootNode.id]: rootNode };
-  let newNeighbors: node<data>[] = [rootNode];
+  let rootNode: Node<data> = createNode<data>(getUniqueId(start), start, 0, priorityFunc(start, destination));
+  const nodes: { [id: string]: Node<data> } = { [rootNode.id]: rootNode };
+  let newNeighbors: Array<Node<data>> = [rootNode];
 
   while (newNeighbors[0].data !== destination) {
     if (rootNode.priority > maxResist) { return null; }
 
     newNeighbors = map(
       getNeighbors(rootNode.data),
-      neighbor => {
+      (neighbor) => {
         const node = nodes[getUniqueId(neighbor)];
         if (node) {
           node.resist += rootNode.resist + resistFunc(rootNode.data, neighbor);
@@ -52,10 +52,10 @@ export function* walkTo<data>(pathingData: WalkToData<data>): IterableIterator<d
 
     newNeighbors = quickSort(
       newNeighbors,
-      node => node.priority + Number(node === rootNode) * node.priority
+      (node) => node.priority + Number(node === rootNode) * node.priority
     );
 
-    forEach(newNeighbors, node => nodes[node.id] = node);
+    forEach(newNeighbors, (node) => nodes[node.id] = node);
 
     rootNode = newNeighbors[0];
     yield rootNode.data;

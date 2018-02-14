@@ -4,7 +4,7 @@ export const createNode = <type>(id: string, data: type, resist: number, priorit
   hasBeenRoot: false,
 });
 
-export type node<type> = {
+export interface Node<type> {
   id: string;
   data: type;
   resist: number;

@@ -9,8 +9,8 @@ export const abstractSearch =
     (str: string) => {
       const prepedTerm = stripPunctuation(term).toLowerCase();
       const prepedStr = stripPunctuation(str).toLowerCase();
-      return !!find(prepedTerm.split(' '), subTerm => prepedStr.indexOf(subTerm) !== -1);
-    }
+      return !!find(prepedTerm.split(' '), (subTerm) => prepedStr.indexOf(subTerm) !== -1);
+    };
 
 export const stripPunctuation =
   (str: string): string =>
@@ -21,7 +21,7 @@ export const camelCase =
     stripPunctuation(str).replace(
       /(?:^\w|[A-Z]|\b\w)/g,
       (letter, index) =>
-        index == 0 ?
+        index === 0 ?
           letter.toLowerCase() :
           letter.toUpperCase()
     ).replace(/\s+/g, '');

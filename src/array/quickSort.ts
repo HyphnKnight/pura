@@ -8,7 +8,7 @@ const swap = <type>(array: type[], indexA: number, indexB: number): type[] => {
 const fetch = <type>(value: type, valueMap: Map<type, number>, func: (val: type) => number): number | null => {
   if (value && !valueMap.get(value)) valueMap.set(value, func(value));
   return valueMap.get(value) || null;
-}
+};
 
 export default function quickSort<type>(array: type[], func: (val: type) => number): type[] {
   let i = 1;

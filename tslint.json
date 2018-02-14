@@ -11,7 +11,6 @@
         ],
         "no-conditional-assignment": false,
         "no-console": false,
-        "no-constant-condition": true,
         "no-debugger": true,
         "no-duplicate-case": true,
         "no-empty": true,
@@ -23,6 +22,7 @@
             true,
             "both"
         ],
+        "interface-name": [true, "never-prefix"],
         "no-invalid-regexp": true,
         "ter-no-irregular-whitespace": [
             true
@@ -45,7 +45,6 @@
         "no-unused-variable": true,
         "no-unused-expression": true,
         "no-shadowed-variable": true,
-        "no-use-before-declare": true,
         "handle-callback-err": true,
         "array-bracket-spacing": [
             "always",
@@ -79,7 +78,9 @@
             true,
             2
         ],
-        "ter-max-len": 80,
+        "max-line-length": [
+            false 
+        ],
         "new-parens": true,
         "indent": true,
         "no-consecutive-blank-lines": [
@@ -100,9 +101,6 @@
             true,
             "always"
         ],
-        "sort-imports": [
-            true
-        ],
         "space-within-parens": [
             true,
             "never"
@@ -116,13 +114,16 @@
         ],
         "ter-arrow-parens": [
             true,
-            "as-needed"
+            "always"
         ],
         "ter-arrow-spacing": [
             true
         ],
         "no-var-keyword": true,
         "object-literal-shorthand": true,
+        "object-literal-sort-keys": false,
+        "ban-types": false,
+        "no-bitwise": false,
         "ter-prefer-arrow-callback": true,
         "prefer-const": true
     }

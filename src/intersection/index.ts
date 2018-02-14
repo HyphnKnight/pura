@@ -1,7 +1,7 @@
-import { Vector2d, set, subtract, subtractSet, magnitudeSqr, add, addSet, dot, cross, scale, lerp } from '../vector';
+import { Geometry, Line } from '../geometry';
+import { round, sign, sqr } from '../math';
+import { add, addSet, cross, dot, lerp, magnitudeSqr, scale, set, subtract, subtractSet, Vector2d } from '../vector';
 import { VectorList } from '../vector/list';
-import { Line, Geometry } from '../geometry';
-import { sign, round, sqr } from '../math';
 
 /* -1 === left, 0 === aligned, 1 === right */
 export const pointRelationToLine =
@@ -20,18 +20,17 @@ export const isPointInAlignedRectangle =
 export const isPointInPolygon =
   (point: Vector2d, points: VectorList): boolean => {
     let i = 0;
-    let len = points.length;
+    const len = points.length;
     let next = 0;
     let relation = 0;
-    while (true) {
+    while (i <= len - 2) {
       next = i === len - 2 ? 0 : i + 2;
       relation = pointRelationToLine(point, [points[i], points[i + 1], points[next], points[next + 1]]);
       if (relation === -1) return false;
       i += 2;
-      if (i > len - 2) break;
     }
     return true;
-  }
+  };
 
 export const isCircleInCircle =
   (positionA: Vector2d, radiusA: number, positionB: Vector2d, radiusB: number) =>
@@ -71,7 +70,7 @@ const validTime =
   (t: number): boolean =>
     t < 0 || t > 1;
 
-export type Intersection = {
+export interface Intersection {
   time: number;
   point: Vector2d;
 }

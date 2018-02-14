@@ -1,4 +1,4 @@
-import { uniqueId } from '../string'
+import { uniqueId } from '../string';
 
 export const identity =
   <T>(x: T): T =>
@@ -63,10 +63,13 @@ export function debounce(func: Function, wait: number, leading: boolean = true, 
 
 export const once = <type>(func: () => type) => {
   let hasBeenCalled = false;
-  return () => hasBeenCalled
-    ? undefined
-    : func();
-}
+  return () => {
+    if (!hasBeenCalled) {
+      hasBeenCalled = true;
+      func();
+    }
+  };
+};
 
 export const compose =
   <type>(...funcs: Function[]) =>
@@ -100,5 +103,5 @@ export const memoize =
         return memoizedDB[id][key] = (memoizedDB[id][key] || func(...args)) as result;
       };
     return memoized;
-  }
+  };
 

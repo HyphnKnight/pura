@@ -1,14 +1,8 @@
-export interface iterator<T, V> {
-  (value: T, index: number, array: T[]): V
-}
+export type iterator<T, V> = (value: T, index: number, array: T[]) => V;
 
-export interface reduceIterator<T, R> {
-  (base: R, value: T, index: number, array: T[]): R
-}
+export type reduceIterator<T, R> = (base: R, value: T, index: number, array: T[]) => R;
 
-export interface timesIterator<T> {
-  (index: number, length: number): T
-}
+export type timesIterator<T> = (index: number, length: number) => T;
 
 export function forEach<T>(array: T[], func: iterator<T, void>): T[] {
   let i = -1;
@@ -32,8 +26,8 @@ export const map =
   <T, R>(array: T[], func: iterator<T, R>): R[] =>
     reduce<T, R[]>(
       array,
-      (result, value, index, array) => {
-        result.push(func(value, index, array))
+      (result, value, index, self) => {
+        result.push(func(value, index, self));
         return result;
       },
       [],
@@ -43,9 +37,9 @@ export const mapToObject =
   <T>(array: T[], func: iterator<T, string>): { [name: string]: T } =>
     reduce(
       array,
-      (obj, value, index, array) => {
-        obj[func(value, index, array)] = value;
-        return obj
+      (obj, value, index, self) => {
+        obj[func(value, index, self)] = value;
+        return obj;
       },
       Object.create(null),
     );
@@ -58,7 +52,7 @@ export const filter =
   <T, R extends T>(array: T[], func: iterator<T, boolean> = (x: T) => !!x): R[] =>
     reduce<T, R[]>(
       array,
-      (result, value, index, array) => func(value, index, array)
+      (result, value, index, self) => func(value, index, self)
         ? (result.push(value as R), result)
         : result,
       [],
@@ -68,7 +62,7 @@ export function find<T>(array: T[], func: iterator<T, boolean>): T | null {
   let i = -1;
   while (++i < array.length) {
     if (func(array[i], i, array)) return array[i];
-  };
+  }
   return null;
 }
 
@@ -96,7 +90,7 @@ export const unique =
     filter(array, (value: T, index: number, self: T[]) => self.indexOf(value) === index);
 
 export const uniqueBy =
-  <T>(array: T[], func: iterator<T, number | boolean | string | symbol | Function>): T[] => {
+  <T>(array: T[], func: iterator<T, number | boolean | string | symbol | (() => void)>): T[] => {
     const result = [];
     const resultKeys = [];
     let i = -1;
@@ -124,8 +118,8 @@ export const countBy =
   };
 
 export const invoke =
-  (array: Function[]): Function[] =>
-    forEach(array, (func: Function) => func());
+  (array: Array<() => void>): Array<() => void> =>
+    forEach(array, (func: (() => void)) => func());
 
 export const concat =
   <T>(...arrays: T[][]): T[] =>
@@ -163,12 +157,6 @@ export const clear =
     return array;
   };
 
-export const toggle =
-  <T>(array: T[], value: T): T[] =>
-    contains(array, value)
-      ? remove(array, value)
-      : add(array, value);
-
 export const remove =
   <T>(array: T[], value: T): T[] => {
     const result = copy(array);
@@ -182,6 +170,12 @@ export const add =
     result.splice(index, 0, value);
     return result;
   };
+
+export const toggle =
+  <T>(array: T[], value: T): T[] =>
+    contains(array, value)
+      ? remove(array, value)
+      : add(array, value);
 
 export const push =
   <T>(array: T[], value: T): T[] => {
@@ -225,9 +219,5 @@ export const any =
 
 export const all =
   <T>(array: T[], func: iterator<T, boolean>) =>
-    !find(array, (value, i, array) => !func(value, i, array));
+    !find(array, (value, i, self) => !func(value, i, self));
 
-export type Chain = {
-  value: <type>() => type[];
-  link(func: (array: any[], ...args: any[]) => any[], ...args: any[]): Chain;
-}

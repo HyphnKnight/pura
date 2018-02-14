@@ -1,8 +1,8 @@
+import { find, forEach, map } from '../array';
 import { isEqual } from '../is/type';
-import { forEach, map, find } from '../array';
-import { uniqueId } from '../string'
+import { uniqueId } from '../string';
 
-export type PossibleState = {
+export interface PossibleState {
   subscribe?: never;
   __store__?: never;
   set?: never;
@@ -10,27 +10,25 @@ export type PossibleState = {
   [prop: string]: any;
 }
 
-export interface Subscription<State extends PossibleState> {
-  (newState: State, oldState: State): void
-}
+export type Subscription<State extends PossibleState> = (newState: State, oldState: State) => void;
 
-export type StoreProps<State extends PossibleState> = {
+export interface StoreProps<State extends PossibleState> {
   subscriptions: { [id: string]: Subscription<State> };
-  protectedSubscribe: (keys: (keyof State)[], func: Subscription<State>) => () => void;
+  protectedSubscribe: (keys: Array<keyof State>, func: Subscription<State>) => () => void;
   subscribe: (func: Subscription<State>) => () => void;
   set: (state: Partial<State>) => void;
   [Symbol.iterator]: () => Iterator<any>;
   __store__: State;
-};
+}
 
-export type UnassignedStoreProps = {
+export interface UnassignedStoreProps {
   subscriptions: { [id: string]: Subscription<{}> };
-  protectedSubscribe: (keys: (keyof {})[], func: Subscription<{}>) => () => void;
+  protectedSubscribe: (keys: Array<keyof {}>, func: Subscription<{}>) => () => void;
   subscribe: (func: Subscription<{}>) => () => void;
   set: (state: Partial<{}>) => void;
   [Symbol.iterator]: () => Iterator<any>;
   __store__: any;
-};
+}
 
 type Store<State extends PossibleState> =
   StoreProps<State> & State;
@@ -43,7 +41,7 @@ const setStore =
 
       let oldStore: State | undefined;
 
-      if (objKeys.map(key => {
+      if (objKeys.map((key) => {
 
         if (!isEqual(updateObj[key], store.__store__[key])) {
 
@@ -63,11 +61,11 @@ const setStore =
 
         }
 
-      }).some(x => x)) {
+      }).some((x) => x)) {
 
         forEach(
           Object.keys(store.subscriptions),
-          key => store.subscriptions[key](store.__store__, oldStore as State)
+          (key) => store.subscriptions[key](store.__store__, oldStore as State)
         );
 
       }
@@ -75,17 +73,17 @@ const setStore =
 
 const protectedSubscribe =
   <state>(store: Store<state>) =>
-    (keys: (keyof state)[], func: Subscription<state>) =>
+    (keys: Array<keyof state>, func: Subscription<state>) =>
       store.subscribe(
         (newState, oldstate) =>
-          find(keys, key => newState[key] !== oldstate[key]) &&
+          find(keys, (key) => newState[key] !== oldstate[key]) &&
           func(newState, oldstate),
       );
 
 export const createStore =
   <State extends PossibleState>(protoObj: State) => {
 
-    const subscriptions: Store<State>["subscriptions"] = {};
+    const subscriptions: Store<State>['subscriptions'] = {};
     const newStore: UnassignedStoreProps = {
       subscriptions: {},
       subscribe: (func: Subscription<State>) => {
@@ -98,17 +96,17 @@ export const createStore =
           delete subscriptions[key];
         };
       },
-      protectedSubscribe: () => () => { },
-      set: () => { },
-      [Symbol.iterator]: () => (function iteratorMaker(protoObj) {
+      protectedSubscribe: () => () => { throw new Error('Store failed to initialize'); },
+      set: () => { throw new Error('Store failed to initialize'); },
+      [Symbol.iterator]: () => (function iteratorMaker(savedProtoObj) {
 
-        const objKeys = Object.keys(protoObj);
+        const objKeys = Object.keys(savedProtoObj);
 
         let index = 0;
 
         return {
           next(): { done: boolean, value: any } {
-            let result = { value: protoObj[objKeys[index]], done: true };
+            const result = { value: savedProtoObj[objKeys[index]], done: true };
 
             if (index <= objKeys.length - 1) {
               result.done = false;
@@ -124,15 +122,15 @@ export const createStore =
 
     forEach(
       Object.keys(protoObj),
-      key => {
+      (key) => {
         newStore.__store__[key] = protoObj[key];
 
         Object.defineProperty(newStore, key, {
-          set: value => {
+          set: (value) => {
             if (!isEqual(value, newStore.__store__[key])) {
               const oldStore = Object.assign({}, newStore.__store__);
               newStore.__store__[key] = value;
-              Object.keys(subscriptions).forEach(key => subscriptions[key](newStore.__store__, oldStore));
+              Object.keys(subscriptions).forEach((subKey) => subscriptions[subKey](newStore.__store__, oldStore));
             }
           },
           get: () => newStore.__store__[key]
@@ -142,7 +140,7 @@ export const createStore =
     );
 
     Object.defineProperty(newStore, 'JSON', {
-      set: string => newStore.set(JSON.parse(string)),
+      set: (string) => newStore.set(JSON.parse(string)),
       get: () => JSON.stringify(newStore.__store__)
     });
 
@@ -155,14 +153,14 @@ export const createStore =
   };
 
 export const multiSubscribe =
-  (stores: Store<any>[], func: () => void): (() => void) => {
+  (stores: Array<Store<any>>, func: () => void): (() => void) => {
     const unsubscribes = map(
       stores,
-      store => store.subscribe(func),
+      (store) => store.subscribe(func),
     );
     return () =>
       forEach(
         unsubscribes,
-        unsubscribe => unsubscribe(),
+        (unsubscribe) => unsubscribe(),
       );
-  }
+  };

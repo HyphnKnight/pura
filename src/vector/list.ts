@@ -1,5 +1,5 @@
 import { round } from '../math';
-import { Vector2d, scaleSet } from './index';
+import { scaleSet, Vector2d } from './index';
 
 export type VectorList = number[];
 
@@ -121,9 +121,7 @@ export const listToVector =
     return result;
   };
 
-export interface vectorIterator<type> {
-  (vec: Vector2d, index: number): type
-}
+export type vectorIterator<type> = (vec: Vector2d, index: number) => type;
 
 export const forEachList =
   (list: VectorList, func: vectorIterator<void>) => {

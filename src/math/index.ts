@@ -30,7 +30,7 @@ export const sum =
   (numbers: number[]) =>
     reduce<number, number>(
       numbers,
-      (sum, val) => sum + val,
+      (total, val) => total + val,
       0,
     );
 

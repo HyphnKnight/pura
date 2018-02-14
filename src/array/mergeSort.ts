@@ -10,7 +10,7 @@ const merge = <type>(left: type[], right: type[], func: (val: type) => number): 
   while (left.length) result.push(left.shift() || left[0]);
   while (right.length) result.push(right.shift() || right[0]);
   return result;
-}
+};
 
 export default function mergeSort<type>(array: type[], func: (val: type) => number): type[] {
   if (array.length < 2) return array;

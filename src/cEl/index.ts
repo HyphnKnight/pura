@@ -1,50 +1,55 @@
+import { forEach } from '../array';
 import {
-  Geometry,
+  canvas,
+  ctx,
+  rotate,
+  setCanvas,
+  translate,
+} from '../canvas';
+import {
   createRectangle,
+  Geometry,
   Rectangle,
   Shape,
 } from '../geometry';
-import { setCanvas, ctx, canvas, translate, rotate } from '../canvas';
-import { Transform } from '../transform';
-import { forEach } from '../array';
 import {
-  Vector2d,
+  isInsideBounding,
+  isPointInAlignedRectangle,
+  isPointInCircle,
+  isPointInPolygon,
+} from '../intersection';
+import { is } from '../is';
+import { Transform } from '../transform';
+import {
+  addSet,
+  magnitudeSqr,
   rotate as rotateVec,
   set,
-  addSet,
   subtractSet,
-  magnitudeSqr,
+  Vector2d,
 } from '../vector';
 import {
-  rotateListAround,
   addListSet,
+  rotateListAround,
 } from '../vector/list';
-import { is } from '../is';
-import {
-  isPointInCircle,
-  isPointInAlignedRectangle,
-  isPointInPolygon,
-  isInsideBounding,
-} from '../intersection';
 
-
-export type cEl<geometryType extends (Geometry | null)> = {
-  geometry?: Geometry,
-  children?: cEl<any>[],
-  render?: (el: cEl<geometryType>) => void,
+export interface CEl<geometryType extends (Geometry | null)> {
+  geometry?: Geometry;
+  children?: Array<CEl<any>>;
+  render?: (el: CEl<geometryType>) => void;
   interact?: {
-    onMouseDown?: (el: cEl<geometryType>, position: Vector2d) => void,
-    onMouseMove?: (el: cEl<geometryType>, position: Vector2d) => void,
-    onMouseUp?: (el: cEl<geometryType>, position: Vector2d) => void,
-  }
+    onMouseDown?: (el: CEl<geometryType>, position: Vector2d) => void,
+    onMouseMove?: (el: CEl<geometryType>, position: Vector2d) => void,
+    onMouseUp?: (el: CEl<geometryType>, position: Vector2d) => void,
+  };
 }
 
-type InteractionData = [cEl<any>, Geometry, Function];
-type InteractionMap = Map<cEl<any>, InteractionData>;
+type InteractionData = [CEl<any>, Geometry, (el: CEl<Geometry>, position: Vector2d) => void];
+type InteractionMap = Map<CEl<any>, InteractionData>;
 
-export const onMouseDownCollection = new Map<cEl<any>, InteractionData>();
-export const onMouseMoveCollection = new Map<cEl<any>, InteractionData>();
-export const onMouseUpCollection = new Map<cEl<any>, InteractionData>();
+export const onMouseDownCollection = new Map<CEl<any>, InteractionData>();
+export const onMouseMoveCollection = new Map<CEl<any>, InteractionData>();
+export const onMouseUpCollection = new Map<CEl<any>, InteractionData>();
 
 
 export let windowGeometry = createRectangle(
@@ -73,11 +78,11 @@ const isInViewport =
 
 const isInWindow = isInViewport(windowGeometry);
 
-const collisionGeometries = new Map<cEl<any>, Geometry>();
+const collisionGeometries = new Map<CEl<any>, Geometry>();
 
 const renderCEl =
   (transform: Transform) =>
-    (el: cEl<Geometry>) => {
+    (el: CEl<Geometry>) => {
       const { geometry, children, render, interact } = el;
 
       ctx.save();
@@ -109,10 +114,10 @@ const renderCEl =
       if (collisionGeometry) transform.apply(collisionGeometry);
 
       ctx.save();
-      render && (!geometry || isInWindow(collisionGeometry as Geometry)) && render(el);
+      if (render && (!geometry || isInWindow(collisionGeometry as Geometry))) render(el);
       ctx.restore();
 
-      children && forEach(children, renderCEl(transform));
+      if (children) forEach(children, renderCEl(transform));
 
       if (interact && collisionGeometry) {
         if (interact.onMouseDown && !onMouseDownCollection.has(el)) {
@@ -143,7 +148,7 @@ const isTouch: boolean = ('ontouchstart' in window);
 
 const convertEventsToPosition =
   (evt: MouseEvent | TouchEvent): Vector2d =>
-    is<MouseEvent>(evt => !!evt.clientX)(evt)
+    is<MouseEvent>((x) => !!x.clientX)(evt)
       ? [evt.clientX, evt.clientY]
       : [evt.touches[0].clientX, evt.touches[0].clientY];
 
@@ -152,20 +157,21 @@ const isInsideVec: Vector2d = [0, 0];
 const isInside =
   (point: Vector2d) =>
     (geometry: Geometry): boolean => {
-      if (magnitudeSqr(subtractSet(set(isInsideVec, point), geometry.position)) > geometry.bounding * geometry.bounding) return false;
+      const seperation = subtractSet(set(isInsideVec, point), geometry.position);
+      if (magnitudeSqr(seperation) > geometry.bounding * geometry.bounding) return false;
       switch (geometry.type) {
-        case Shape.Circle: return isPointInCircle(
+      case Shape.Circle: return isPointInCircle(
           point,
           geometry.position,
           geometry.radius
         );
-        case Shape.Rectangle: return isPointInAlignedRectangle(
+      case Shape.Rectangle: return isPointInAlignedRectangle(
           point,
           geometry.position,
           geometry.width,
           geometry.height
         );
-        case Shape.Polygon: return isPointInPolygon(
+      case Shape.Polygon: return isPointInPolygon(
           point,
           addListSet(
             rotateListAround(
@@ -176,7 +182,7 @@ const isInside =
             geometry.position
           ),
         );
-        default: return false;
+      default: return false;
       }
     };
 
@@ -206,29 +212,29 @@ const interactionHandler =
         position[0] *= scaleX;
         position[1] *= scaleY;
         const isPositionInside = isInside(position);
-        collection.forEach(([cEl, geometry, effect]) => isPositionInside(geometry) && effect(cEl, position));
+        collection.forEach(([element, geometry, effect]) => isPositionInside(geometry) && effect(element, position));
       }
     };
 
 export const renderUI =
-  (canvas: HTMLCanvasElement, base: cEl<Geometry>): (() => void) | void => {
-    setCanvas(canvas);
+  (canvasEl: HTMLCanvasElement, base: CEl<Geometry>): (() => void) | void => {
+    setCanvas(canvasEl);
 
-    canvas.addEventListener(
+    canvasEl.addEventListener(
       isTouch
         ? 'ontouchstart'
         : 'mousedown',
       interactionHandler(onMouseDownCollection)
     );
 
-    canvas.addEventListener(
+    canvasEl.addEventListener(
       isTouch
         ? 'ontouchmove'
         : 'mousemove',
       interactionHandler(onMouseMoveCollection)
     );
 
-    canvas.addEventListener(
+    canvasEl.addEventListener(
       isTouch
         ? 'ontouchend'
         : 'mouseup',

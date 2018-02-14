@@ -1,7 +1,7 @@
-import { forEach, unique, filter, map } from '../array';
-import { isString, isBoolean } from '../is/type';
-import { Tag, HTMLTag, EventCallback, isTag, isHTMLTag } from './html';
-import { attachEvent } from './events'
+import { filter, forEach, map, unique } from '../array';
+import { isBoolean, isString } from '../is/type';
+import { attachEvent } from './events';
+import { EventCallback, HTMLTag, isHTMLTag, isTag, Tag } from './html';
 
 
 const getAttributes =
@@ -9,7 +9,7 @@ const getAttributes =
     const result: { [prop: string]: string } = {};
     forEach(
       [...(Array.from(el.attributes))],
-      node => result[node.nodeName] = node.nodeValue || '',
+      (node) => result[node.nodeName] = node.nodeValue || '',
     );
     return result;
   };
@@ -21,7 +21,7 @@ const renderTagToElement =
         ...Object.keys(getAttributes(el as HTMLElement)),
         ...Object.keys(tag.attributes),
       ]),
-      propName => {
+      (propName) => {
         if (typeof tag.attributes[propName] === 'undefined') {
           (el as HTMLElement).removeAttribute(propName);
         } else if (propName.toLowerCase().slice(0, 1) === 'on') {
@@ -39,7 +39,7 @@ const renderTagToElement =
     );
     forEach(
       tag.children,
-      (childTag, i) => render(childTag, el as HTMLElement, i),
+      (childTag, index) => render(childTag, el as HTMLElement, index),
     );
     let i = el.childNodes.length - tag.children.length;
     while (i-- > 0) {
@@ -50,9 +50,9 @@ const renderTagToElement =
 export const renderToElement =
   (tag: Tag, target: HTMLElement = document.body): HTMLElement => {
     if (tag.name.toLowerCase() !== target.nodeName.toLowerCase()) {
-      throw `Single Render attempting to render a ${target.nodeName} as ${tag.name}`;
+      throw new Error(`Single Render attempting to render a ${target.nodeName} as ${tag.name}`);
     } else if (target.id !== '' && (tag.attributes.id || '') !== target.id) {
-      throw `Single render attempting to render tag with id #${tag.attributes.id} to an element with the id of #${target.id}`;
+      throw new Error(`Single render attempting to render tag with id #${tag.attributes.id} to an element with the id of #${target.id}`);
     }
     renderTagToElement(tag, target);
     return target;
@@ -66,7 +66,7 @@ export const renderToBody =
     scriptCache = scriptCache || map(
       filter(
         [...document.body.childNodes] as HTMLElement[],
-        node => !!node && !!node.tagName && node.tagName.toLowerCase() === 'script',
+        (node) => !!node && !!node.tagName && node.tagName.toLowerCase() === 'script',
       ),
       (node): HTMLTag => ({
         name: 'script',

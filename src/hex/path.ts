@@ -1,5 +1,5 @@
 import { pathTo } from '../path/pathTo';
-import { Hex, getNeighbors } from './index';
+import { getNeighbors, Hex } from './index';
 
 export const hexPathTo =
   (

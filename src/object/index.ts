@@ -1,17 +1,15 @@
-import { reduce, map, find, forEach as arrayForEach } from '../array';
+import { find, forEach as arrayForEach, map, reduce } from '../array';
 
-export type objLit<Value> = { [prop: string]: Value };
+export interface ObjLit<Value> { [prop: string]: Value; }
 
-export interface iterator<Value, Result> {
-  (value: Value, key: string, obj: objLit<Value>): Result;
-}
+export type Iterator<Value, Result> = (value: Value, key: string, obj: objLit<Value>) => Result;
 
 export const forEach =
   <Value>(obj: objLit<Value>, func: iterator<Value, void>) =>
-    arrayForEach(Object.keys(obj), key => func(obj[key], key, obj));
+    arrayForEach(Object.keys(obj), (key) => func(obj[key], key, obj));
 
 export const mapValues =
-  <Value, Result>(obj: objLit<Value>, func: iterator<Value, Result>): objLit<Result> =>
+  <Value, Result>(obj: objLit<Value>, func: Iterator<Value, Result>): objLit<Result> =>
     reduce<string | number, objLit<Result>>(
       Object.keys(obj),
       (result, key) => {
@@ -22,7 +20,7 @@ export const mapValues =
     );
 
 export const mapKeys =
-  <Value>(obj: objLit<Value>, func: iterator<Value, string | number>): objLit<Value> =>
+  <Value>(obj: objLit<Value>, func: Iterator<Value, string | number>): objLit<Value> =>
     reduce<string, objLit<Value>>(
       Object.keys(obj),
       (result, key) => {
@@ -33,7 +31,7 @@ export const mapKeys =
     );
 
 export const pick =
-  <Value extends Result, Result>(obj: objLit<Value>, func: iterator<Value, boolean>): objLit<Result> =>
+  <Value extends Result, Result>(obj: objLit<Value>, func: Iterator<Value, boolean>): objLit<Result> =>
     reduce<string | number, objLit<Result>>(
       Object.keys(obj),
       (result, key) => {
@@ -46,11 +44,11 @@ export const pick =
     );
 
 export const match =
-  <type extends { [id: string]: any }>(match: Partial<type>) =>
+  <type extends { [id: string]: any }>(target: Partial<type>) =>
     (obj: type) =>
       reduce<string, boolean>(
-        Object.keys(match),
-        (result, key) => result && obj[key] === match[key],
+        Object.keys(target),
+        (result, key) => result && obj[key] === target[key],
         true
       );
 
@@ -59,18 +57,18 @@ export const copy =
     merge(Object.create(null), obj);
 
 export const mapToArray =
-  <Value, Result>(obj: objLit<Value>, iterator: iterator<Value, Result>): Result[] =>
-    map(Object.keys(obj), key => iterator(obj[key], key as string, obj));
+  <Value, Result>(obj: objLit<Value>, iterator: Iterator<Value, Result>): Result[] =>
+    map(Object.keys(obj), (key) => iterator(obj[key], key as string, obj));
 
 export const pairs =
-  <Value>(obj: objLit<Value>): [string, Value][] =>
+  <Value>(obj: objLit<Value>): Array<[string, Value]> =>
     map<string, [string, Value]>(
       Object.keys(obj) as string[],
-      key => ([key, obj[key]])
+      (key) => ([key, obj[key]])
     );
 
 export const merge =
-  <type>(obj: type, ...objs: Partial<type>[]): type =>
+  <type>(obj: type, ...objs: Array<Partial<type>>): type =>
     Object.assign(Object.create(null), obj, ...objs);
 
 export const get =
@@ -83,7 +81,7 @@ export const get =
       if ((!value && paths.length) || typeof value === 'undefined') return defaultValue;
     }
     return value;
-  }
+  };
 
 export const set =
   <type extends { [id: string]: any }, value>(obj: type, path: string, value: value): type => {
@@ -93,13 +91,13 @@ export const set =
 
 export const findKey =
   <type extends { [id: string]: any }>(obj: type, predicate: (key: string | number, value: any) => boolean) =>
-    find(Object.keys(obj), key => predicate(key, obj[key]));
+    find(Object.keys(obj), (key) => predicate(key, obj[key]));
 
 export const findValue =
   <type extends { [id: string]: any }>(obj: type, predicate: (key: string | number, value: any) => boolean) => {
-    const key = find(Object.keys(obj), key => predicate(key, obj[key]));
-    if (key) {
-      return obj[key];
+    const valueKey = find(Object.keys(obj), (key) => predicate(key, obj[key]));
+    if (valueKey) {
+      return obj[valueKey];
     } else {
       return null;
     }

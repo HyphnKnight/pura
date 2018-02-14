@@ -1,14 +1,12 @@
-import { reduce, times, flatten, map } from '../array';
+import { flatten, map, reduce, times } from '../array';
 
-export interface Noise {
-  <Data>(
+export type Noise = <Data>(
     list: Data[],
     getNeighbors: (item: Data) => Data[],
     getValue: (item: Data) => number,
     setValue: (item: Data, value: number) => void,
     iterations: number
-  ): Data[];
-}
+  ) => Data[];
 
 export const sum = (...numbers: number[]): number => {
   let num = 0;
@@ -16,7 +14,7 @@ export const sum = (...numbers: number[]): number => {
     num += numbers[i];
   }
   return num;
-}
+};
 
 export const noise: Noise =
   (list, getNeighbors, getValue, setValue, iterations = 1) => {
@@ -27,13 +25,15 @@ export const noise: Noise =
       setValue(list[i], newValue);
     }
 
-    if (!!iterations) noise(
-      list,
-      getNeighbors,
-      getValue,
-      setValue,
-      iterations - 1
-    );
+    if (!!iterations) {
+      noise(
+        list,
+        getNeighbors,
+        getValue,
+        setValue,
+        iterations - 1
+      );
+    }
 
     return list;
   };
@@ -53,15 +53,15 @@ function getGridNeighbors(grid: number[][], x: number, y: number, radius: number
 }
 
 export function gridNoise(width: number, height: number, iterations: number = 3): number[][] {
-  const noise: number[][] = times(height, () => times(width, () => Math.random()));
+  const noiseGrid: number[][] = times(height, () => times(width, () => Math.random()));
 
   for (let i = iterations; i >= 0; --i) {
-    for (let y = noise.length - 1; y >= 0; --y) {
-      for (let x = noise[y].length - 1; x >= 0; --x) {
-        const center = noise[y][x];
-        const neighbors = getGridNeighbors(noise, x, y);
+    for (let y = noiseGrid.length - 1; y >= 0; --y) {
+      for (let x = noiseGrid[y].length - 1; x >= 0; --x) {
+        const center = noiseGrid[y][x];
+        const neighbors = getGridNeighbors(noiseGrid, x, y);
 
-        noise[y][x] = ((reduce(neighbors, (total: number, value: number): number => total + value, 0) / neighbors.length) + center) / 2;
+        noiseGrid[y][x] = ((reduce(neighbors, (total: number, value: number): number => total + value, 0) / neighbors.length) + center) / 2;
 
       }
     }

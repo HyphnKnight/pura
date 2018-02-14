@@ -1,12 +1,12 @@
-import { round, } from '../math';
+import { round } from '../math';
 import {
-  Vector2d,
-  addSet, scaleSet,
+  addSet,
+  scaleSet, Vector2d,
 } from '../vector';
 import {
-  VectorList,
-  subtractList,
-  forEachList, mapList,
+  forEachList,
+  mapList,
+  subtractList, VectorList,
 } from '../vector/list';
 
 export let canvas: HTMLCanvasElement = document.createElement('canvas');
@@ -17,7 +17,7 @@ export const setCanvas =
     canvas = newCanvas;
     const newContext = newCanvas.getContext('2d', canvasAttributes) as CanvasRenderingContext2D;
     if (newContext) ctx = newContext;
-  }
+  };
 
 const originVector: Vector2d = [0, 0];
 
@@ -103,10 +103,10 @@ export const drawOval =
   (position: Vector2d, points: VectorList, angle: number = 0) => {
     const midPoints = mapList(
       points,
-      (pnt, i) => scaleSet(
+      (pnt, index) => scaleSet(
         addSet(
-          points[i * 2 - 2]
-            ? [points[i * 2 - 2], points[i * 2 - 1]]
+          points[index * 2 - 2]
+            ? [points[index * 2 - 2], points[index * 2 - 1]]
             : [points[points.length - 2], points[points.length - 1]],
           pnt
         ),
