@@ -1,5 +1,7 @@
 export const frustum = (left, right, bottom, top, near, far) => (target) => {
-    var rl = 1 / (right - left), tb = 1 / (top - bottom), nf = 1 / (near - far);
+    const rl = 1 / (right - left);
+    const tb = 1 / (top - bottom);
+    const nf = 1 / (near - far);
     target[0] = (near * 2) * rl;
     target[1] = 0;
     target[2] = 0;

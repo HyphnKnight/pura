@@ -8,12 +8,12 @@ export const addSet = (vecA, vecB) => set(vecA, [vecA[0] + vecB[0], vecA[1] + ve
 export const add = (vecA, vecB) => addSet([...vecA], vecB);
 export const subtractSet = (vecA, vecB) => set(vecA, [vecA[0] - vecB[0], vecA[1] - vecB[1]]);
 export const subtract = (vecA, vecB) => subtractSet([...vecA], vecB);
-export const scaleSet = (base, scale) => {
-    base[0] *= scale;
-    base[1] *= scale;
+export const scaleSet = (base, scaleValue) => {
+    base[0] *= scaleValue;
+    base[1] *= scaleValue;
     return base;
 };
-export const scale = (vec, scale) => scaleSet([...vec], scale);
+export const scale = (vec, scaleValue) => scaleSet([...vec], scaleValue);
 export const lerpSet = (vecA, vecB, dt) => {
     vecA[0] = nLerp(vecA[0], vecB[0], dt);
     vecA[1] = nLerp(vecA[1], vecB[1], dt);

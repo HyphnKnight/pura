@@ -1,124 +1,188 @@
 import { forEach } from '../array';
+import { isArray, isBoolean, isFunction, isNode, isNumber, isString, isUndefined, } from '../is/type';
 import { uniqueId } from '../string';
-import { isString, isNumber, isFunction, isBoolean, isArray, isUndefined, isNode, } from '../is/type';
-export const isTag = (unknown) => !!unknown &&
-    !unknown.nodeType &&
-    isString(unknown.name) &&
-    !!unknown.attributes &&
-    !!unknown.children;
-export const isHTMLTag = (unknown) => !!unknown &&
-    isString(unknown.name) &&
-    !!unknown.element;
-const openAndCloseTag = /(<[a-z0-9-]+\s*((\w+\s*=\s*".*?"\s*)|\w+\s*)*\s*\/?>)|(<\/[a-z0-9-]+>)/g;
-const whitespaceOnly = /^[\s\t\n]+$/;
-const tagName = /[a-z0-9]+(-[a-z0-9]+)?/;
-const tagAttributes = /(\w+\s*=\s*"(\n|.)*?")|(\w+)/g;
-const insertedTag = /tag_[a-z0-9]+_/g;
-const parseTag = (tagText, eventMap) => {
-    const tagResult = tagName.exec(tagText);
-    if (!tagResult)
-        return null;
-    const { 0: name, index } = tagResult;
-    const attributes = {};
-    let result = true;
-    tagAttributes.lastIndex = index + name.length + 1;
-    while (result) {
-        result = tagAttributes.exec(tagText);
-        if (result) {
-            const [attributeText] = result;
-            const [name, valueInQuotes] = attributeText.split('=');
-            if (valueInQuotes) {
-                const value = valueInQuotes.slice(1, -1);
-                attributes[name] = eventMap.get(value) || value;
-            }
-            else {
-                attributes[name] = true;
-            }
-        }
-    }
-    return {
-        name, attributes,
-        children: [],
-    };
-};
+import { isTag, } from './types';
+const isAlphaChar = (c) => c >= 'A' && c <= 'z';
+const isWhitespaceChar = (c) => c === '\n' ||
+    c === ' ' ||
+    c === '\t';
+const isNumberChar = (c) => c >= '0' && c <= '9';
 const parser = (html, eventMap, tags) => {
     const content = [];
-    let result = true;
-    let lastIndex = 0;
-    while (result) {
-        result = openAndCloseTag.exec(html);
-        if (result) {
-            const { index, 1: startTag, 4: endTag } = result;
-            if (startTag) {
-                let textValue = html.substr(lastIndex, index - lastIndex);
-                lastIndex = index + startTag.length;
-                if (!whitespaceOnly.test(textValue) && textValue !== '') {
-                    let tagResult = true;
-                    while (tagResult) {
-                        tagResult = insertedTag.exec(textValue);
-                        if (tagResult) {
-                            const text = textValue.slice(2, tagResult.index);
-                            text !== '' && content[content.length - 1].children.push(text);
-                            const tagId = textValue.slice(tagResult.index, tagResult.index + tagResult[0].length);
-                            content[content.length - 1].children.push(tags.get(tagId));
-                            textValue = textValue.slice(tagResult.index + tagResult[0].length);
-                            insertedTag.lastIndex = -1;
-                        }
-                        else if (!whitespaceOnly.test(textValue) && textValue !== '') {
-                            content[content.length - 1].children.push(textValue);
-                        }
-                    }
-                }
-                const parsedStartTag = parseTag(startTag, eventMap);
-                if (/\/>$/.test(startTag) && parsedStartTag) {
-                    content[content.length - 1].children.push(parsedStartTag);
-                }
-                else if (parsedStartTag) {
-                    content.push(parsedStartTag);
-                }
+    let activeTag = null;
+    let cIndex = -1;
+    let i = -1;
+    let char = '';
+    let activeString = '';
+    let attrName = '';
+    let buildingTag = '';
+    while (i < html.length) {
+        char = html[++i];
+        activeString = '';
+        if (char === '<' && html[i + 1] === '/') {
+            // end tag
+            ++i;
+            char = html[++i];
+            // loop past whitespace
+            while (isWhitespaceChar(char))
+                char = html[++i];
+            // check for proper tag name start char
+            if (!isAlphaChar(char)) {
+                throw new Error(`Invalid tag name discovered first character can't be ${char}`);
             }
-            else if (endTag) {
-                let textValue = html.substr(lastIndex, index - lastIndex);
-                lastIndex = index + endTag.length;
-                const lastTag = content.pop();
-                if (!whitespaceOnly.test(textValue) && textValue !== '') {
-                    let tagResult = true;
-                    while (tagResult) {
-                        tagResult = insertedTag.exec(textValue);
-                        if (tagResult) {
-                            const text = textValue.slice(2, tagResult.index);
-                            text !== '' && lastTag.children.push(text);
-                            const tagId = textValue.slice(tagResult.index, tagResult.index + tagResult[0].length);
-                            lastTag.children.push(tags.get(tagId));
-                            textValue = textValue.slice(tagResult.index + tagResult[0].length);
-                            insertedTag.lastIndex = -1;
-                        }
-                        else if (!whitespaceOnly.test(textValue) && textValue !== '') {
-                            lastTag.children.push(textValue);
-                        }
+            // loop through tag name
+            while (!isWhitespaceChar(char) && (isAlphaChar(char) || char === '-' || isNumberChar(char)) && char) {
+                activeString += char;
+                char = html[++i];
+            }
+            // loop past whitespace
+            while (isWhitespaceChar(char))
+                char = html[++i];
+            if (char === '>') {
+                activeTag = content[cIndex];
+                if (activeTag.name === activeString) {
+                    activeString = '';
+                    const parent = content[--cIndex];
+                    if (!parent) {
+                        return activeTag;
                     }
-                }
-                const [endTagName] = endTag.match(/[\w-]+/);
-                if (lastTag.name !== endTagName) {
-                    throw `${endTagName} is being closed before ${lastTag.name} is has been closed`;
-                }
-                if (!content[content.length - 1] && lastTag) {
-                    openAndCloseTag.lastIndex = -1;
-                    return lastTag;
+                    else {
+                        parent.children.push(activeTag);
+                    }
                 }
                 else {
-                    if (isString(lastTag.children[0])) {
-                        lastTag.children[0] = lastTag.children[0].replace(/^\s*/, '');
-                    }
-                    if (isString(lastTag.children[lastTag.children.length - 1])) {
-                        lastTag.children[lastTag.children.length - 1] = lastTag.children[lastTag.children.length - 1].replace(/\s*$/, '');
-                    }
-                    content[content.length - 1].children.push(lastTag);
+                    throw new Error(`Invalid html attempting to close ${activeString} before closing ${content[cIndex].name}.`);
                 }
+            }
+            else {
+                throw new Error(`Invalid end tag discovered expected closing '>' found ${char}`);
+            }
+        }
+        else if (char === '<') {
+            // tag
+            activeString = '';
+            char = html[++i];
+            // check for proper tag name start char
+            if (!isAlphaChar(char)) {
+                throw new Error(`Invalid tag name discovered first character can't be ${char}`);
+            }
+            // loop through tag name
+            while (!isWhitespaceChar(char) && (isAlphaChar(char) || char === '-' || isNumberChar(char)) && char) {
+                activeString += char;
+                char = html[++i];
+            }
+            // check for valid next char
+            if (isWhitespaceChar(char) || char === '/' || char === '>') {
+                activeTag = {
+                    name: activeString.toUpperCase(),
+                    attributes: {},
+                    children: [],
+                };
+                content[++cIndex] = activeTag;
+                activeString = '';
+                // loop past whitespace
+                while (isWhitespaceChar(char))
+                    char = html[++i];
+                // loop through attributes
+                // stop if find end of tag
+                while (!(char === '>' || (char === '/' && html[i + 1] === '>'))) {
+                    // loop past whitespace
+                    while (isWhitespaceChar(char))
+                        char = html[++i];
+                    // loop through name
+                    if (!isAlphaChar(char)) {
+                        throw new Error(`Invalid property name discovered first character can't be ${char}`);
+                    }
+                    // loop through property name
+                    while (!isWhitespaceChar(char) && (isAlphaChar(char) || char === '-' || isNumberChar(char)) && char) {
+                        activeString += char;
+                        char = html[++i];
+                    }
+                    attrName = activeString;
+                    activeString = '';
+                    // loop past whitespace
+                    while (isWhitespaceChar(char))
+                        char = html[++i];
+                    // is valued attribute
+                    if (char === '=') {
+                        char = html[++i];
+                        // loop past whitespace
+                        while (isWhitespaceChar(char))
+                            char = html[++i];
+                        if (char === '"') {
+                            char = html[++i];
+                            while (char !== '"' || html[i - 1] === '\\') {
+                                activeString += char;
+                                char = html[++i];
+                            }
+                            char = html[++i];
+                            activeTag.attributes[attrName] = eventMap.get(activeString) || activeString;
+                            activeString = '';
+                        }
+                        else {
+                            throw new Error(`Invalid property value must be wrapped in quotes.`);
+                        }
+                    }
+                    else {
+                        activeTag.attributes[attrName] = true;
+                    }
+                    // loop past whitespace
+                    while (isWhitespaceChar(char))
+                        char = html[++i];
+                }
+                if (char !== '>') {
+                    // this is self closing
+                    i += 2;
+                    if (content[cIndex - 1]) {
+                        const parent = content[cIndex - 1];
+                        parent.children.push(activeTag);
+                    }
+                    else {
+                        if (cIndex !== 0) {
+                            throw new Error(`Unclosed tag ${content[cIndex].name}.`);
+                        }
+                        else {
+                            return content[cIndex];
+                        }
+                    }
+                }
+            }
+            else {
+                throw new Error(`Invalid tag name discovered ${activeString + char}.`);
+            }
+        }
+        else {
+            // string handling
+            while (char !== '<' && char) {
+                if (char === 't' && html[i + 1] === 'a' && html[i + 2] === 'g' && html[i + 3] === '_' && html[i + 12] === '_') {
+                    buildingTag = html.slice(i, i + 13);
+                    i += 13;
+                    const insertTag = tags.get(buildingTag);
+                    if (insertTag) {
+                        content[cIndex].children.push(activeString, insertTag);
+                        activeString = '';
+                    }
+                    else {
+                        activeString += buildingTag;
+                    }
+                }
+                else {
+                    activeString += char;
+                }
+                char = html[++i];
+            }
+            if (char === '<') {
+                --i;
+                content[cIndex].children.push(activeString);
             }
         }
     }
-    return content[0];
+    if (cIndex !== 0) {
+        throw new Error(`Unclosed tag ${content[cIndex].name}.`);
+    }
+    else {
+        return content[cIndex];
+    }
 };
 const parseParameter = (events, tags, parameter) => {
     if (isUndefined(parameter) || (!parameter && isBoolean(parameter))) {
@@ -144,11 +208,11 @@ const parseParameter = (events, tags, parameter) => {
     }
     else if (isNode(parameter)) {
         const tagKey = `tag_${uniqueId()}_`;
-        const HTMLTag = {
+        const newHTMLTag = {
             name: parameter.tagName,
             element: parameter,
         };
-        tags.set(tagKey, HTMLTag);
+        tags.set(tagKey, newHTMLTag);
         return tagKey;
     }
     return null;

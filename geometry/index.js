@@ -1,6 +1,6 @@
-import { rotateSet, scaleSet, magnitudeSqr } from '../vector';
-import { subtractListSet, averageList, rotateList, addListSet, forEachList } from '../vector/list';
-import { times, flatten } from '../array';
+import { flatten, times } from '../array';
+import { magnitudeSqr, rotateSet, scaleSet } from '../vector';
+import { addListSet, averageList, forEachList, rotateList, subtractListSet } from '../vector/list';
 /* Type Declarations */
 export var Shape;
 (function (Shape) {
@@ -51,7 +51,7 @@ export const createRectangle = (position, rotation = 0, width = 1, height = 1) =
 export const createPolygon = (position, rotation = 0, points) => {
     const adjustedPoints = normalizePoints(points);
     let bounding = 0;
-    forEachList(adjustedPoints, pnt => bounding = Math.max(bounding || magnitudeSqr(pnt)));
+    forEachList(adjustedPoints, (pnt) => bounding = Math.max(bounding || magnitudeSqr(pnt)));
     bounding = Math.sqrt(bounding);
     return {
         type: Shape.Polygon,
@@ -61,7 +61,7 @@ export const createPolygon = (position, rotation = 0, points) => {
 };
 /* Custom Geometry */
 export const createSquare = (position, rotation, size) => createRectangle(position, rotation, size, size);
-export const createEqualLateralPolygonPoints = (sides, radius) => flatten(times(sides, i => scaleSet(rotateSet([0, 1], i * (2 * Math.PI / sides)), radius)));
+export const createEqualLateralPolygonPoints = (sides, radius) => flatten(times(sides, (i) => scaleSet(rotateSet([0, 1], i * (2 * Math.PI / sides)), radius)));
 export const createEqualLateralPolygon = (position, rotation, sides, radius) => createPolygon(position, rotation, createEqualLateralPolygonPoints(sides, radius));
 /* Utility Funcs */
 export const getPolygonPoints = (polygon) => addListSet(rotateList(polygon.points, polygon.rotation), polygon.position);

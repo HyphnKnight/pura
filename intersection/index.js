@@ -1,5 +1,5 @@
-import { set, subtract, subtractSet, magnitudeSqr, add, addSet, dot, cross, scale, lerp } from '../vector';
-import { sign, round, sqr } from '../math';
+import { round, sign, sqr } from '../math';
+import { add, addSet, cross, dot, lerp, magnitudeSqr, scale, set, subtract, subtractSet } from '../vector';
 /* -1 === left, 0 === aligned, 1 === right */
 export const pointRelationToLine = (point, line) => sign((line[2] - line[0]) * (point[1] - line[1]) - (line[3] - line[1]) * (point[0] - line[0]));
 export const isPointInCircle = (point, position, radius) => magnitudeSqr(subtract(point, position)) <= sqr(radius);
@@ -7,17 +7,15 @@ export const isPointInAlignedRectangle = (point, position, width, height) => Mat
     Math.abs(point[1] - position[1]) <= height / 2;
 export const isPointInPolygon = (point, points) => {
     let i = 0;
-    let len = points.length;
+    const len = points.length;
     let next = 0;
     let relation = 0;
-    while (true) {
+    while (i <= len - 2) {
         next = i === len - 2 ? 0 : i + 2;
         relation = pointRelationToLine(point, [points[i], points[i + 1], points[next], points[next + 1]]);
         if (relation === -1)
             return false;
         i += 2;
-        if (i > len - 2)
-            break;
     }
     return true;
 };

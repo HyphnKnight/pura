@@ -1,4 +1,4 @@
-import { map, flatten, filter, any } from '../array';
+import { any, filter, flatten, map } from '../array';
 import { lerp as nLerp } from '../math';
 const neighborPosition = [
     [0, 1, -1],
@@ -162,7 +162,7 @@ export const getFieldOfViewGrid = (grid) => (hex, range, isBlocked) => filter(ge
     return !any(line, isBlocked);
 });
 export const generateGrid = (radius) => {
-    let rows = radius * 2 + 1;
+    const rows = radius * 2 + 1;
     const grid = [];
     for (let y = 0; y < rows; ++y) {
         const row = y <= radius

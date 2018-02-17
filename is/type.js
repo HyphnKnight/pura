@@ -1,15 +1,15 @@
-import { find, all } from '../array';
+import { all, find } from '../array';
 import { is } from './index';
 /* Type Testing */
-export const isNull = is(u => u === null);
-export const isUndefined = is(u => typeof u === 'undefined');
-export const isNullOrUndefined = is(u => isNull(u) || isUndefined(u));
-export const isString = is(u => typeof u === 'string');
-export const isNumber = is(u => typeof u === 'number');
-export const isBoolean = is(u => typeof u === 'boolean');
-export const isDate = is(u => Object.prototype.toString.call(u) === '[object Date]');
-export const isFunction = is(u => !!u && u.constructor && u.call && u.apply);
-export const isArray = is(u => Array.isArray(u));
+export const isNull = is((u) => u === null);
+export const isUndefined = is((u) => typeof u === 'undefined');
+export const isNullOrUndefined = is((u) => isNull(u) || isUndefined(u));
+export const isString = is((u) => typeof u === 'string');
+export const isNumber = is((u) => typeof u === 'number');
+export const isBoolean = is((u) => typeof u === 'boolean');
+export const isDate = is((u) => Object.prototype.toString.call(u) === '[object Date]');
+export const isFunction = is((u) => !!u && u.constructor && u.call && u.apply);
+export const isArray = is((u) => Array.isArray(u));
 export const isArrayOf = (func) => (u) => !!u &&
     Array.isArray(u) &&
     all(u, func);
@@ -17,11 +17,11 @@ export const isArrayOfNumbers = isArrayOf(isNumber);
 export const isArrayOfStrings = isArrayOf(isString);
 export const isArrayOfDates = isArrayOf(isDate);
 export const isArrayOfFunctions = isArrayOf(isFunction);
-export const isMap = is(u => !!u && u.__proto__ === Map.prototype);
+export const isMap = is((u) => !!u && u.__proto__ === Map.prototype);
 export const isMapOfTo = (keyFunc, valueFunc) => (u) => isMap(u) &&
     all([...u.keys()], keyFunc) &&
     all([...u.values()], valueFunc);
-export const isSet = is(u => !!u && u.__proto__ === Set.prototype);
+export const isSet = is((u) => !!u && u.__proto__ === Set.prototype);
 export const isSetOf = (func) => (u) => isSet(u) &&
     all([...u.entries()], func);
 export const isObjectLiteral = is((u) => {
@@ -36,12 +36,12 @@ export const isObjectLiteral = is((u) => {
     }
     return Object.getPrototypeOf(u) === tmp;
 });
-export const isNode = is(u => typeof Node === "object"
+export const isNode = is((u) => typeof Node === 'object'
     ? u instanceof Node
-    : u && typeof u === "object" && typeof u.nodeType === "number" && typeof u.nodeName === "string");
-export const isElement = is(u => typeof HTMLElement === "object"
+    : u && typeof u === 'object' && typeof u.nodeType === 'number' && typeof u.nodeName === 'string');
+export const isElement = is((u) => typeof HTMLElement === 'object'
     ? u instanceof HTMLElement
-    : u && typeof u === "object" && u !== null && u.nodeType === 1 && typeof u.nodeName === "string");
+    : u && typeof u === 'object' && u !== null && u.nodeType === 1 && typeof u.nodeName === 'string');
 export const isComparable = is((u) => isNullOrUndefined(u) ||
     isNumber(u) ||
     isBoolean(u) ||

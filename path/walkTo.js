@@ -6,13 +6,13 @@ export function* walkTo(pathingData) {
     if (start === destination)
         return destination;
     let rootNode = createNode(getUniqueId(start), start, 0, priorityFunc(start, destination));
-    let nodes = { [rootNode.id]: rootNode };
+    const nodes = { [rootNode.id]: rootNode };
     let newNeighbors = [rootNode];
     while (newNeighbors[0].data !== destination) {
         if (rootNode.priority > maxResist) {
             return null;
         }
-        newNeighbors = map(getNeighbors(rootNode.data), neighbor => {
+        newNeighbors = map(getNeighbors(rootNode.data), (neighbor) => {
             const node = nodes[getUniqueId(neighbor)];
             if (node) {
                 node.resist += rootNode.resist + resistFunc(rootNode.data, neighbor);
@@ -25,8 +25,8 @@ export function* walkTo(pathingData) {
                 return createNode(getUniqueId(neighbor), neighbor, resist, priority, rootNode);
             }
         });
-        newNeighbors = quickSort(newNeighbors, node => node.priority + Number(node === rootNode) * node.priority);
-        forEach(newNeighbors, node => nodes[node.id] = node);
+        newNeighbors = quickSort(newNeighbors, (node) => node.priority + Number(node === rootNode) * node.priority);
+        forEach(newNeighbors, (node) => nodes[node.id] = node);
         rootNode = newNeighbors[0];
         yield rootNode.data;
     }

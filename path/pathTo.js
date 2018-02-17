@@ -1,36 +1,38 @@
-import { forEach } from '../array';
+import { forEach, map } from '../array';
 import mergeSort from '../array/mergeSort';
 export const pathTo = (getNeighbors, resist, heuristic, maxResist = Infinity) => (start, goal) => {
     let frontier = [[start, heuristic(goal, start)]];
-    const came_from = new Map();
-    const cost_so_far = new Map();
-    came_from.set(start, null);
-    cost_so_far.set(start, 0);
-    let current = start;
+    const cameFrom = new Map();
+    const costSoFar = new Map();
+    cameFrom.set(start, null);
+    costSoFar.set(start, 0);
+    let current = frontier[0];
     while (frontier.length) {
-        const [current] = frontier.shift();
-        const current_cost = cost_so_far.get(current);
-        if (current === goal)
+        current = frontier.shift();
+        const currentCost = costSoFar.get(current);
+        if (current[0] === goal) {
             break;
-        if (current_cost >= maxResist)
+        }
+        if (currentCost >= maxResist) {
             return null;
-        forEach(getNeighbors(current), neighbor => {
-            const new_cost = current_cost + resist(current, neighbor);
-            const old_cost = cost_so_far.get(neighbor);
-            if (!old_cost || new_cost < old_cost) {
-                cost_so_far.set(neighbor, new_cost);
-                const priority = new_cost + heuristic(goal, neighbor);
+        }
+        forEach(getNeighbors(current[0]), (neighbor) => {
+            const newCost = currentCost + resist(current[0], neighbor);
+            const oldCost = costSoFar.get(neighbor);
+            if (!oldCost || newCost < oldCost) {
+                costSoFar.set(neighbor, newCost);
+                const priority = newCost + heuristic(goal, neighbor);
                 frontier.push([neighbor, priority]);
-                came_from.set(neighbor, current);
+                cameFrom.set(neighbor, current);
             }
         });
         frontier = mergeSort(frontier, ([, value]) => value);
     }
     const path = [];
-    current = goal;
-    while (current !== start) {
+    let last = goal;
+    while (last !== start) {
         path.unshift(current);
-        current = came_from.get(current);
+        last = cameFrom.get(current);
     }
-    return path;
+    return map(path, ([itemData]) => itemData);
 };

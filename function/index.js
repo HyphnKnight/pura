@@ -35,9 +35,12 @@ export function debounce(func, wait, leading = true, maxWait = Number.MAX_VALUE)
 }
 export const once = (func) => {
     let hasBeenCalled = false;
-    return () => hasBeenCalled
-        ? undefined
-        : func();
+    return () => {
+        if (!hasBeenCalled) {
+            hasBeenCalled = true;
+            func();
+        }
+    };
 };
 export const compose = (...funcs) => (startValue) => {
     let result = startValue;

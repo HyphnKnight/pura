@@ -1,4 +1,4 @@
-import { Point, Circle, Rectangle, Polygon } from './index';
+import { Circle, Point, Polygon, Rectangle } from './index';
 export declare const isPoint: (unknown: any) => unknown is Point;
 export declare const isCircle: (unknown: any) => unknown is Circle;
 export declare const isRectangle: (unknown: any) => unknown is Rectangle;

@@ -19,9 +19,7 @@ export declare const scaleToListSet: (list: number[], newMagnitude: number) => n
 export declare const sumList: (list: number[]) => [number, number];
 export declare const averageList: (list: number[]) => [number, number];
 export declare const listToVector: (list: number[]) => [number, number][];
-export interface vectorIterator<type> {
-    (vec: Vector2d, index: number): type;
-}
+export declare type vectorIterator<type> = (vec: Vector2d, index: number) => type;
 export declare const forEachList: (list: number[], func: vectorIterator<void>) => void;
 export declare const mapListSet: (list: number[], func: vectorIterator<[number, number]>) => number[];
 export declare const mapList: (list: number[], func: vectorIterator<[number, number]>) => number[];

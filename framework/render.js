@@ -1,110 +1,121 @@
-import { forEach, unique, filter, map } from '../array';
-import { isString, isBoolean } from '../is/type';
-import { isTag, isHTMLTag } from './html';
+import { filter, forEach, map, unique, } from '../array';
+import { isBoolean, isString, } from '../is/type';
 import { attachEvent } from './events';
+import { isHTMLTag, isTag, } from './types';
 const getAttributes = (el) => {
     const result = {};
-    forEach([...(Array.from(el.attributes))], node => result[node.nodeName] = node.nodeValue || '');
+    forEach([...(Array.from(el.attributes))], (node) => result[node.nodeName] = node.nodeValue || '');
     return result;
-};
-const renderTagToElement = (tag, el) => {
-    forEach(unique([
-        ...Object.keys(getAttributes(el)),
-        ...Object.keys(tag.attributes),
-    ]), propName => {
-        if (typeof tag.attributes[propName] === 'undefined') {
-            el.removeAttribute(propName);
-        }
-        else if (propName.toLowerCase().slice(0, 1) === 'on') {
-            attachEvent(el, propName.slice(2).toLowerCase(), tag.attributes[propName]);
-        }
-        else if (isBoolean(tag.attributes[propName])) {
-            if (!tag.attributes[propName] && !!el.getAttribute(propName)) {
-                el.removeAttribute(propName);
-            }
-            else if (tag.attributes[propName] && !el.getAttribute(propName)) {
-                el.setAttribute(propName, String(tag.attributes[propName]));
-            }
-        }
-        else if (el.getAttribute(propName) !== String(tag.attributes[propName])) {
-            el.setAttribute(propName, String(tag.attributes[propName]));
-        }
-    });
-    forEach(tag.children, (childTag, i) => render(childTag, el, i));
-    let i = el.childNodes.length - tag.children.length;
-    while (i-- > 0) {
-        if (el.lastChild)
-            el.lastChild.remove();
-    }
-};
-export const renderToElement = (tag, target = document.body) => {
-    if (tag.name.toLowerCase() !== target.nodeName.toLowerCase()) {
-        throw `Single Render attempting to render a ${target.nodeName} as ${tag.name}`;
-    }
-    else if (target.id !== '' && (tag.attributes.id || '') !== target.id) {
-        throw `Single render attempting to render tag with id #${tag.attributes.id} to an element with the id of #${target.id}`;
-    }
-    renderTagToElement(tag, target);
-    return target;
 };
 // This is ok because this will only ever come from one location.
 let scriptCache;
 export const renderToBody = (tag) => {
-    scriptCache = scriptCache || map(filter([...document.body.childNodes], node => !!node && !!node.tagName && node.tagName.toLowerCase() === 'script'), (node) => ({
+    scriptCache = scriptCache || map(filter([...document.body.childNodes], (node) => !!node && !!node.tagName && node.tagName.toLowerCase() === 'script'), (node) => ({
         name: 'script',
         element: node,
     }));
     if (tag.children.indexOf(scriptCache[0]) === -1) {
         tag.children.push(...scriptCache);
     }
-    renderToElement(tag, document.body);
+    render(tag, document.body);
     return document.body;
 };
-export const render = (tag, parent = document.body, index = 0) => {
-    let el = parent.childNodes[index];
-    if (isString(tag)) {
-        if (el && el.nodeType === Node.TEXT_NODE) {
-            if (tag !== '') {
-                if (el.nodeValue !== tag)
-                    el.nodeValue = tag;
+const applyTagPropsToElement = (tag, target) => {
+    forEach(unique([
+        ...Object.keys(getAttributes(target)),
+        ...Object.keys(tag.attributes),
+    ]), (propName) => {
+        if (typeof tag.attributes[propName] === 'undefined') {
+            target.removeAttribute(propName);
+        }
+        else if (propName.toLowerCase().slice(0, 1) === 'on') {
+            attachEvent(target, propName.slice(2).toLowerCase(), tag.attributes[propName]);
+        }
+        else if (isBoolean(tag.attributes[propName])) {
+            if (!tag.attributes[propName] && !!target.getAttribute(propName)) {
+                target.removeAttribute(propName);
             }
-            else {
-                el.remove();
+            else if (tag.attributes[propName] && !target.getAttribute(propName)) {
+                target.setAttribute(propName, String(tag.attributes[propName]));
             }
         }
-        else if (tag !== '') {
-            el = document.createTextNode(tag);
+        else if (target.getAttribute(propName) !== String(tag.attributes[propName])) {
+            target.setAttribute(propName, String(tag.attributes[propName]));
+        }
+    });
+    return target;
+};
+export const render = (tag, target) => {
+    if (tag.name !== target.nodeName) {
+        throw new Error(`Render attempting to render a ${target.nodeName} as ${tag.name}`);
+    }
+    else if (target.id !== '' && (tag.attributes.id || '') !== target.id) {
+        throw new Error(`Render attempting to render tag with id #${tag.attributes.id} to an element with the id of #${target.id}`);
+    }
+    applyTagPropsToElement(tag, target);
+    let activeTags = [
+        [target, tag.children],
+    ];
+    while (activeTags.length) {
+        const nextTags = [];
+        let atIndex = -1;
+        while (++atIndex < activeTags.length) {
+            const [parent, childTags] = activeTags[atIndex];
             const childNodes = [...parent.childNodes];
-            while (childNodes[index]) {
-                const removeEl = childNodes.pop();
-                if (removeEl)
-                    removeEl.remove();
+            let childTagIndex = -1;
+            while (++childTagIndex < childTags.length) {
+                const childTag = childTags[childTagIndex];
+                const childElement = childNodes[childTagIndex];
+                if (isString(tag)) {
+                    if (childElement && childElement.nodeType === Node.TEXT_NODE) {
+                        if (tag !== '') {
+                            if (childElement.nodeValue !== tag)
+                                childElement.nodeValue = tag;
+                        }
+                        else {
+                            childElement.remove();
+                        }
+                    }
+                    else {
+                        while (childNodes[childTagIndex]) {
+                            const removeEl = childNodes.pop();
+                            if (removeEl)
+                                removeEl.remove();
+                        }
+                        if (tag !== '') {
+                            parent.appendChild(document.createTextNode(tag));
+                        }
+                    }
+                }
+                else if (isTag(childTag)) {
+                    let tagRef = childElement;
+                    if (!childElement || childElement.nodeType !== Node.ELEMENT_NODE || childElement.tagName !== childTag.name) {
+                        while (childNodes[childTagIndex]) {
+                            const removeEl = childNodes.pop();
+                            if (removeEl)
+                                removeEl.remove();
+                        }
+                        tagRef = document.createElement(childTag.name);
+                    }
+                    applyTagPropsToElement(childTag, tagRef);
+                    if (childTag.children.length) {
+                        nextTags.push([
+                            childElement,
+                            childTag.children,
+                        ]);
+                    }
+                }
+                else if (isHTMLTag(childTag) && childTag.element !== childElement) {
+                    while (childNodes[childTagIndex]) {
+                        const removeEl = childNodes.pop();
+                        if (removeEl)
+                            removeEl.remove();
+                    }
+                    parent.appendChild(childTag.element);
+                }
             }
-            parent.appendChild(el);
         }
+        activeTags = nextTags;
     }
-    else if (isTag(tag)) {
-        if (!el || el.nodeType !== Node.ELEMENT_NODE || el.tagName.toLowerCase() !== tag.name.toLowerCase()) {
-            el = document.createElement(tag.name);
-            const childNodes = [...parent.childNodes];
-            while (childNodes[index]) {
-                const removeEl = childNodes.pop();
-                if (removeEl)
-                    removeEl.remove();
-            }
-            parent.appendChild(el);
-        }
-        renderTagToElement(tag, el);
-    }
-    else if (isHTMLTag(tag) && tag.element !== el) {
-        const childNodes = [...parent.childNodes];
-        while (childNodes[index]) {
-            const removeEl = childNodes.pop();
-            if (removeEl)
-                removeEl.remove();
-        }
-        parent.appendChild(tag.element);
-        return tag.element;
-    }
-    return el;
+    return target;
 };

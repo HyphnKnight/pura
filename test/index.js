@@ -1,5 +1,5 @@
+import { filter, forEach, map } from '../array';
 import { isString } from '../is/type';
-import { map, filter, forEach } from '../array';
 const isNode = typeof window === 'undefined';
 const success = (description) => !isNode
     ? console.log(`  %c[PASS] %c${description}`, `color:green;`, `color:black;`)
@@ -27,11 +27,11 @@ const suiteLog = (title, percentage) => {
 };
 export const suite = (title, tests) => {
     try {
-        const results = map(tests, testDetails => test(testDetails[0], testDetails[1]));
-        const correct = filter(results, x => x[0]).length;
+        const results = map(tests, (testDetails) => test(testDetails[0], testDetails[1]));
+        const correct = filter(results, (x) => x[0]).length;
         const percentage = Math.floor(correct / tests.length * 100);
         suiteLog(title, percentage);
-        forEach(results, result => result[0]
+        forEach(results, (result) => result[0]
             ? success(result[1])
             : fail(result[1], result[2]));
         return percentage === 100;
@@ -43,11 +43,11 @@ export const suite = (title, tests) => {
 };
 export const suiteAsync = async (title, tests) => {
     try {
-        const results = await Promise.all(map(tests, testDetails => testAsync(testDetails[0], testDetails[1])));
-        const correct = filter(results, x => x[0]).length;
+        const results = await Promise.all(map(tests, (testDetails) => testAsync(testDetails[0], testDetails[1])));
+        const correct = filter(results, (x) => x[0]).length;
         const percentage = Math.floor(correct / tests.length * 100);
         suiteLog(title, percentage);
-        forEach(results, result => result[0]
+        forEach(results, (result) => result[0]
             ? success(result[1])
             : fail(result[1], result[2]));
         return percentage === 100;

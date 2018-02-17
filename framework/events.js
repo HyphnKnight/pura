@@ -12,4 +12,4 @@ export const attachEvent = (el, type, func) => {
     }
     typeMap.set(el, func);
 };
-export const auditEvents = (parent) => events.forEach(eventMap => eventMap.forEach((_value, el) => !parent.contains(el) && eventMap.delete(el)));
+export const auditEvents = (parent = document.body) => events.forEach((eventMap) => eventMap.forEach((_, el) => !parent.contains(el) && eventMap.delete(el)));

@@ -16,16 +16,16 @@ export function reduceRight(array, func, base) {
         base = func(base, array[i], i, array);
     return base;
 }
-export const map = (array, func) => reduce(array, (result, value, index, array) => {
-    result.push(func(value, index, array));
+export const map = (array, func) => reduce(array, (result, value, index, self) => {
+    result.push(func(value, index, self));
     return result;
 }, []);
-export const mapToObject = (array, func) => reduce(array, (obj, value, index, array) => {
-    obj[func(value, index, array)] = value;
+export const mapToObject = (array, func) => reduce(array, (obj, value, index, self) => {
+    obj[func(value, index, self)] = value;
     return obj;
 }, Object.create(null));
 export const mapToMap = (array, func) => new Map(map(array, func));
-export const filter = (array, func = (x) => !!x) => reduce(array, (result, value, index, array) => func(value, index, array)
+export const filter = (array, func = (x) => !!x) => reduce(array, (result, value, index, self) => func(value, index, self)
     ? (result.push(value), result)
     : result, []);
 export function find(array, func) {
@@ -34,7 +34,6 @@ export function find(array, func) {
         if (func(array[i], i, array))
             return array[i];
     }
-    ;
     return null;
 }
 export function times(length, func) {
@@ -91,9 +90,6 @@ export const clear = (array) => {
         array.pop();
     return array;
 };
-export const toggle = (array, value) => contains(array, value)
-    ? remove(array, value)
-    : add(array, value);
 export const remove = (array, value) => {
     const result = copy(array);
     if (array.indexOf(value) !== -1)
@@ -105,6 +101,9 @@ export const add = (array, value, index = 0) => {
     result.splice(index, 0, value);
     return result;
 };
+export const toggle = (array, value) => contains(array, value)
+    ? remove(array, value)
+    : add(array, value);
 export const push = (array, value) => {
     const result = copy(array);
     result.push(value);
@@ -129,4 +128,4 @@ export function firstValues(array, num = 1) {
     return result;
 }
 export const any = (array, func) => !!find(array, func);
-export const all = (array, func) => !find(array, (value, i, array) => !func(value, i, array));
+export const all = (array, func) => !find(array, (value, i, self) => !func(value, i, self));

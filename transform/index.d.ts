@@ -1,10 +1,10 @@
-import { Vector2d } from '../vector';
 import { Geometry } from '../geometry';
+import { Vector2d } from '../vector';
 export declare class Transform {
     position: Vector2d;
-    saved_positions: Vector2d[];
+    savedPositions: Vector2d[];
     rotation: number;
-    saved_rotations: number[];
+    savedRotations: number[];
     constructor();
     apply: (geometry: Geometry) => Geometry;
     save(): void;

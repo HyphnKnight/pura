@@ -1,5 +1,5 @@
-export const scale = (src, scale, target) => {
-    const [x, y, z] = scale;
+export const scale = (src, scaleVec, target) => {
+    const [x, y, z] = scaleVec;
     target[0] = src[0] * x;
     target[1] = src[1] * x;
     target[2] = src[2] * x;

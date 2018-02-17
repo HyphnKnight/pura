@@ -7,7 +7,7 @@ export const round = (x) => x + 0.5 | 0;
 export const eqSign = (x, y) => (x ^ y) >= 0;
 export const multiplyByPowerOfTwo = (x, powOfTwo) => x << powOfTwo;
 export const divideByPowerOfTwo = (x, powOfTwo) => x >> powOfTwo;
-export const sum = (numbers) => reduce(numbers, (sum, val) => sum + val, 0);
+export const sum = (numbers) => reduce(numbers, (total, val) => total + val, 0);
 export const clamp = (num, lower, upper) => num > upper
     ? upper
     : (num < lower

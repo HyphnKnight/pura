@@ -4,8 +4,8 @@ export declare const addSet: (vecA: [number, number, number], vecB: [number, num
 export declare const add: (vecA: [number, number, number], vecB: [number, number, number]) => [number, number, number];
 export declare const subtractSet: (vecA: [number, number, number], vecB: [number, number, number]) => [number, number, number];
 export declare const subtract: (vecA: [number, number, number], vecB: [number, number, number]) => [number, number, number];
-export declare const scaleSet: (base: [number, number, number], scale: number) => [number, number, number];
-export declare const scale: (vec: [number, number, number], scale: number) => [number, number, number];
+export declare const scaleSet: (base: [number, number, number], scaleValue: number) => [number, number, number];
+export declare const scale: (vec: [number, number, number], scaleValue: number) => [number, number, number];
 export declare const lerpSet: (vecA: [number, number, number], vecB: [number, number, number], dt: number) => [number, number, number];
 export declare const lerp: (vecA: [number, number, number], vecB: [number, number, number], dt: number) => [number, number, number];
 export declare const equals: (vecA: [number, number, number], vecB: [number, number, number]) => boolean;

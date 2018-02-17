@@ -1,11 +1,11 @@
-import { createRectangle, Shape, } from '../geometry';
-import { setCanvas, ctx, canvas, translate, rotate } from '../canvas';
-import { Transform } from '../transform';
 import { forEach } from '../array';
-import { rotate as rotateVec, set, addSet, subtractSet, magnitudeSqr, } from '../vector';
-import { rotateListAround, addListSet, } from '../vector/list';
+import { canvas, ctx, rotate, setCanvas, translate, } from '../canvas';
+import { createRectangle, Shape, } from '../geometry';
+import { isInsideBounding, isPointInAlignedRectangle, isPointInCircle, isPointInPolygon, } from '../intersection';
 import { is } from '../is';
-import { isPointInCircle, isPointInAlignedRectangle, isPointInPolygon, isInsideBounding, } from '../intersection';
+import { Transform } from '../transform';
+import { addSet, magnitudeSqr, rotate as rotateVec, set, subtractSet, } from '../vector';
+import { addListSet, rotateListAround, } from '../vector/list';
 export const onMouseDownCollection = new Map();
 export const onMouseMoveCollection = new Map();
 export const onMouseUpCollection = new Map();
@@ -33,9 +33,11 @@ const renderCEl = (transform) => (el) => {
     if (collisionGeometry)
         transform.apply(collisionGeometry);
     ctx.save();
-    render && (!geometry || isInWindow(collisionGeometry)) && render(el);
+    if (render && (!geometry || isInWindow(collisionGeometry)))
+        render(el);
     ctx.restore();
-    children && forEach(children, renderCEl(transform));
+    if (children)
+        forEach(children, renderCEl(transform));
     if (interact && collisionGeometry) {
         if (interact.onMouseDown && !onMouseDownCollection.has(el)) {
             onMouseDownCollection.set(el, [el, collisionGeometry, interact.onMouseDown]);
@@ -60,12 +62,13 @@ const renderCEl = (transform) => (el) => {
     transform.restore();
 };
 const isTouch = ('ontouchstart' in window);
-const convertEventsToPosition = (evt) => is(evt => !!evt.clientX)(evt)
+const convertEventsToPosition = (evt) => is((x) => !!x.clientX)(evt)
     ? [evt.clientX, evt.clientY]
     : [evt.touches[0].clientX, evt.touches[0].clientY];
 const isInsideVec = [0, 0];
 const isInside = (point) => (geometry) => {
-    if (magnitudeSqr(subtractSet(set(isInsideVec, point), geometry.position)) > geometry.bounding * geometry.bounding)
+    const seperation = subtractSet(set(isInsideVec, point), geometry.position);
+    if (magnitudeSqr(seperation) > geometry.bounding * geometry.bounding)
         return false;
     switch (geometry.type) {
         case Shape.Circle: return isPointInCircle(point, geometry.position, geometry.radius);
@@ -94,18 +97,18 @@ const interactionHandler = (collection) => (evt) => {
         position[0] *= scaleX;
         position[1] *= scaleY;
         const isPositionInside = isInside(position);
-        collection.forEach(([cEl, geometry, effect]) => isPositionInside(geometry) && effect(cEl, position));
+        collection.forEach(([element, geometry, effect]) => isPositionInside(geometry) && effect(element, position));
     }
 };
-export const renderUI = (canvas, base) => {
-    setCanvas(canvas);
-    canvas.addEventListener(isTouch
+export const renderUI = (canvasEl, base) => {
+    setCanvas(canvasEl);
+    canvasEl.addEventListener(isTouch
         ? 'ontouchstart'
         : 'mousedown', interactionHandler(onMouseDownCollection));
-    canvas.addEventListener(isTouch
+    canvasEl.addEventListener(isTouch
         ? 'ontouchmove'
         : 'mousemove', interactionHandler(onMouseMoveCollection));
-    canvas.addEventListener(isTouch
+    canvasEl.addEventListener(isTouch
         ? 'ontouchend'
         : 'mouseup', interactionHandler(onMouseUpCollection));
     const render = renderCEl(new Transform());

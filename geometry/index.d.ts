@@ -6,20 +6,20 @@ export declare enum Shape {
     Rectangle = "Rectangle",
     Polygon = "Polygon",
 }
-export declare type Point = {
+export interface Point {
     type: Shape.Point;
     position: Vector2d;
     rotation: number;
     bounding: 0;
-};
-export declare type Circle = {
+}
+export interface Circle {
     type: Shape.Circle;
     position: Vector2d;
     rotation: number;
     radius: number;
     bounding: number;
-};
-export declare type Rectangle = {
+}
+export interface Rectangle {
     type: Shape.Rectangle;
     position: Vector2d;
     rotation: number;
@@ -27,14 +27,14 @@ export declare type Rectangle = {
     height: number;
     points: VectorList;
     bounding: number;
-};
-export declare type Polygon = {
+}
+export interface Polygon {
     type: Shape.Polygon;
     position: Vector2d;
     rotation: number;
     points: VectorList;
     bounding: number;
-};
+}
 export declare type Line = [number, number, number, number];
 export declare type Geometry = Point | Circle | Rectangle | Polygon;
 export declare const getRectanglePoints: (width: number, height: number) => number[];

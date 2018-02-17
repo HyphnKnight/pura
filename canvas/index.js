@@ -1,6 +1,6 @@
-import { round, } from '../math';
+import { round } from '../math';
 import { addSet, scaleSet, } from '../vector';
-import { subtractList, forEachList, mapList, } from '../vector/list';
+import { forEachList, mapList, subtractList, } from '../vector/list';
 export let canvas = document.createElement('canvas');
 export let ctx = canvas.getContext('2d');
 export const setCanvas = (newCanvas, canvasAttributes) => {
@@ -44,8 +44,8 @@ export const drawPolygon = (position, points, angle = 0) => {
     ctx.restore();
 };
 export const drawOval = (position, points, angle = 0) => {
-    const midPoints = mapList(points, (pnt, i) => scaleSet(addSet(points[i * 2 - 2]
-        ? [points[i * 2 - 2], points[i * 2 - 1]]
+    const midPoints = mapList(points, (pnt, index) => scaleSet(addSet(points[index * 2 - 2]
+        ? [points[index * 2 - 2], points[index * 2 - 1]]
         : [points[points.length - 2], points[points.length - 1]], pnt), 0.5));
     ctx.save();
     translate(position);
