@@ -1,9 +1,10 @@
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const { readFile: rf, writeFile: wf } = require('fs');
+const { readFile: rf, writeFile: wf, readdir: rd, rmdir: rmd, } = require('fs');
 const readFile = util.promisify(rf);
 const writeFile = util.promisify(wf);
-
+const readDir = util.promisify(rd);
+const removeDir = util.promisify(rmd);
 /**
  * Deploy Process:
  * Check for uncommited changes
@@ -46,14 +47,14 @@ async function deploy() {
   }
   try {
     console.log(`Linting Pura.`)
-    await exec(`npm run lint`);
+    await exec(`npm run lint:all`);
   } catch (e) {
     logError(`Deploy failed, can not deploy while there are lint errors.`);
     process.exit(0);
   }
   try {
     console.log(`Compiling Pura.`)
-    await exec(`npm run compile`);
+    await exec(`npm run compile:src`);
   } catch (e) {
     logError(`Deploy failed, can not deploy the build failed.`);
     process.exit(0);
@@ -95,9 +96,37 @@ async function deploy() {
     console.log(e);
     process.exit(0);
   }
+  const reservedFiles = [
+    '.git',
+    '.gitignore',
+    'LICENSE',
+    'package.json',
+    'node_modules',
+    'dist',
+  ];
+  let files;
   try {
-    console.log(`Moving newer files out of dist folder.`);
-    await exec(`mv -u ./dist/** ./`);
+    console.log(`Removing old files.`);
+    files = await readDir('./');
+    files = files.filter(file => {
+      if(file[0] === '.') {
+        return false;
+      } else if (reservedFiles.indexOf(file)!== -1 ) {
+        return false;
+      }
+      return true;
+    });
+    await Promise.all(files.map(async(file) => await exec(`rm -rf ./${file}`)));
+  } catch (e) {
+    logError(`Deploy failed, unable read contents of the ./dist directory.`);
+    await exec(`git reset HEAD --hard`);
+    await exec(`git checkout dev`);
+    console.log(e);
+    process.exit(0);
+  }
+  try {
+    console.log(`Moving new files out of dist folder.`);
+    await exec(`mv ./dist/** ./`);
     await exec(`git add .`);
     console.log(`Commiting new version of the project.`);
     await exec(`git commit -m 'version@${version}'`);

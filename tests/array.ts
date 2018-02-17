@@ -1,26 +1,25 @@
-import { suite } from '../src/test';
 import {
-  forEach,
-  reduce,
-  reduceRight,
-  map,
-  mapToObject,
-  mapToMap,
+  concat,
+  countBy,
+  difference,
   filter,
   find,
-  times,
-  difference,
-  intersection,
   flatten,
+  forEach,
+  intersection,
+  invoke,
+  map,
+  mapToMap,
+  mapToObject,
+  reduce,
+  reduceRight,
+  reverse,
+  times,
+  union,
   unique,
   uniqueBy,
-  countBy,
-  invoke,
-  concat,
-  union,
-  reverse,
-  heuristicFind,
 } from '../src/array';
+import { suite } from '../src/test';
 
 export default () => {
   const testArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -37,15 +36,15 @@ export default () => {
         let testStr = '';
         forEach(
           testArray,
-          num => {
+          (num) => {
             inc++;
             testStr += num;
           }
         );
         if (inc !== 11) {
-          throw 'Did not iterate the correct amount of times.';
+          throw new Error('Did not iterate the correct amount of times.');
         } else if (testStr !== str) {
-          throw 'Did not iterate in the correct order.';
+          throw new Error('Did not iterate in the correct order.');
         }
       }
     ],
@@ -55,16 +54,16 @@ export default () => {
         let inc = 0;
         const testStr = reduce(
           testArray,
-          (testStr, num) => {
+          (testStrAcc, num) => {
             inc++;
-            return testStr + num;
+            return testStrAcc + num;
           },
           '',
         );
         if (inc !== 11) {
-          throw 'Did not iterate the correct amount of times.';
+          throw new Error('Did not iterate the correct amount of times.');
         } else if (testStr !== str) {
-          throw 'Did not properly accumulate the final value.';
+          throw new Error('Did not properly accumulate the final value.');
         }
       }
     ],
@@ -74,16 +73,16 @@ export default () => {
         let inc = 0;
         const testStr = reduceRight(
           testArray,
-          (testStr, num) => {
+          (testStrAcc, num) => {
             inc++;
-            return testStr + num;
+            return testStrAcc + num;
           },
           '',
         );
         if (inc !== 11) {
-          throw 'Did not iterate the correct amount of times.';
+          throw new Error('Did not iterate the correct amount of times.');
         } else if (testStr !== strRev) {
-          throw 'Did not properly accumulate the final value.';
+          throw new Error('Did not properly accumulate the final value.');
         }
       }
     ],
@@ -93,15 +92,15 @@ export default () => {
         let inc = 0;
         const doubleArray = map(
           testArray,
-          num => {
+          (num) => {
             inc++;
             return num * 2;
           }
         );
         if (inc !== 11) {
-          throw 'Did not iterate the correct amount of times.';
+          throw new Error('Did not iterate the correct amount of times.');
         } else if (strDouble !== doubleArray.join('')) {
-          throw `Did not properly transform the values,\n    was ${doubleArray.join('')} should be ${strDouble}`;
+          throw new Error(`Did not properly transform the values,\n    was ${doubleArray.join('')} should be ${strDouble}`);
         }
       }
     ],
@@ -111,15 +110,15 @@ export default () => {
         let inc = 0;
         const mappedObject = mapToObject(
           testArray,
-          num => {
+          (num) => {
             inc++;
             return `_${num}_`;
           }
         );
         if (inc !== 11) {
-          throw 'Did not iterate the correct amount of times.';
+          throw new Error('Did not iterate the correct amount of times.');
         } else if (mappedObject._1_ !== 1 || mappedObject._10_ !== 10) {
-          throw `Did not properly create keys.`;
+          throw new Error(`Did not properly create keys.`);
         }
       }
     ],
@@ -129,15 +128,15 @@ export default () => {
         let inc = 0;
         const mappedMap = mapToMap(
           testArray,
-          num => {
+          (num) => {
             inc++;
             return [`_${num}_`, num];
           }
         );
         if (inc !== 11) {
-          throw 'Did not iterate the correct amount of times.';
+          throw new Error('Did not iterate the correct amount of times.');
         } else if (mappedMap.get('_1_') !== 1 || mappedMap.get('_10_') !== 10) {
-          throw `Did not properly create keys.`;
+          throw new Error(`Did not properly create keys.`);
         }
       }
     ],
@@ -147,24 +146,24 @@ export default () => {
         let inc = 0;
         const oddArray = filter(
           testArray,
-          num => {
+          (num) => {
             inc++;
             return num % 2 !== 0;
           }
         );
         if (inc !== 11) {
-          throw 'Did not iterate the correct amount of times.';
+          throw new Error('Did not iterate the correct amount of times.');
         } else if (strOdd !== oddArray.join('')) {
-          throw `Did not properly transform the values,\n    was ${oddArray.join('')} should be ${strOdd}`;
+          throw new Error(`Did not properly transform the values,\n    was ${oddArray.join('')} should be ${strOdd}`);
         }
       }
     ],
     [
       'find',
       () => {
-        const seven = find(testArray, num => num === 7);
+        const seven = find(testArray, (num) => num === 7);
         if (seven !== 7) {
-          throw `Did not find the correct value.`;
+          throw new Error(`Did not find the correct value.`);
         }
       }
     ],
@@ -174,15 +173,15 @@ export default () => {
         let inc = 0;
         const timesArray = times(
           11,
-          num => {
+          (num) => {
             inc++;
             return num;
           }
         );
         if (inc !== 11) {
-          throw 'Did not iterate the correct amount of times.';
+          throw new Error('Did not iterate the correct amount of times.');
         } else if (str !== timesArray.join('')) {
-          throw `Did not pass through the correct values,\n    was ${timesArray.join('')} should be ${str}`;
+          throw new Error(`Did not pass through the correct values,\n    was ${timesArray.join('')} should be ${str}`);
         }
       }
     ],
@@ -192,7 +191,7 @@ export default () => {
         const correctStr = '13579';
         const diffArray = difference(testArray, testDoubleArray);
         if (correctStr !== diffArray.join('')) {
-          throw `Did not properly find the difference,\n    was ${diffArray.join('')} should be ${correctStr}`;
+          throw new Error(`Did not properly find the difference,\n    was ${diffArray.join('')} should be ${correctStr}`);
         }
       }
     ],
@@ -202,7 +201,7 @@ export default () => {
         const correctStr = '0246810';
         const intersectionArray = intersection(testArray, testDoubleArray);
         if (correctStr !== intersectionArray.join('')) {
-          throw `Did not properly find the intersection,\n    was ${intersectionArray.join('')} should be ${correctStr}`;
+          throw new Error(`Did not properly find the intersection,\n    was ${intersectionArray.join('')} should be ${correctStr}`);
         }
       }
     ],
@@ -212,7 +211,7 @@ export default () => {
         const correctStr = '01234567891002468101214161820';
         const flattenedArray = flatten([testArray, testDoubleArray]);
         if (correctStr !== flattenedArray.join('')) {
-          throw `Did not properly flatten arrays,\n    was ${flattenedArray.join('')} should be ${correctStr}`;
+          throw new Error(`Did not properly flatten arrays,\n    was ${flattenedArray.join('')} should be ${correctStr}`);
         }
       }
     ],
@@ -222,7 +221,7 @@ export default () => {
         const correctStr = '0123456789101214161820';
         const uniqueArray = unique([...testArray, ...testDoubleArray]);
         if (correctStr !== uniqueArray.join('')) {
-          throw `Did not properly find the unique values,\n    was ${uniqueArray.join('')} should be ${correctStr}`;
+          throw new Error(`Did not properly find the unique values,\n    was ${uniqueArray.join('')} should be ${correctStr}`);
         }
       }
     ],
@@ -232,17 +231,16 @@ export default () => {
         const correctStr = '0123456789101214161820';
         const uniqueArray = uniqueBy(
           [...testArray, ...testDoubleArray],
-          value => value,
+          (value) => value,
         );
         if (correctStr !== uniqueArray.join('')) {
-          throw `Did not properly find the unique values,\n    was ${uniqueArray.join('')} should be ${correctStr}`;
+          throw new Error(`Did not properly find the unique values,\n    was ${uniqueArray.join('')} should be ${correctStr}`);
         }
       }
     ],
     [
       'countBy',
       () => {
-        const correctStr = '0123456789101214161820';
         const counted = countBy(
           testArray,
           (num) => num % 2 === 0
@@ -250,7 +248,7 @@ export default () => {
             : 'odd'
         );
         if (counted.even !== 6 || counted.odd !== 5) {
-          throw `Did not properly count the number of even and odd numbers.`;
+          throw new Error(`Did not properly count the number of even and odd numbers.`);
         }
       }
     ],
@@ -273,7 +271,7 @@ export default () => {
         ];
         invoke(testFunctions);
         if (testStr !== str) {
-          throw 'Did not properly execute all the functions.';
+          throw new Error('Did not properly execute all the functions.');
         }
       }
     ],
@@ -283,7 +281,7 @@ export default () => {
         const correctStr = '01234567891002468101214161820';
         const flattenedArray = concat(testArray, testDoubleArray);
         if (correctStr !== flattenedArray.join('')) {
-          throw `Did not properly concat arrays,\n    was ${flattenedArray.join('')} should be ${correctStr}`;
+          throw new Error(`Did not properly concat arrays,\n    was ${flattenedArray.join('')} should be ${correctStr}`);
         }
       }
     ],
@@ -293,7 +291,7 @@ export default () => {
         const correctStr = '0123456789101214161820';
         const unionArray = union(testArray, testDoubleArray);
         if (correctStr !== unionArray.join('')) {
-          throw `Did not properly find the unique values,\n    was ${unionArray.join('')} should be ${correctStr}`;
+          throw new Error(`Did not properly find the unique values,\n    was ${unionArray.join('')} should be ${correctStr}`);
         }
       }
     ],
@@ -302,7 +300,7 @@ export default () => {
       () => {
         const result = reverse(testArray).join('');
         if (result !== strRev) {
-          throw `Did not properly reverse the array,\n    was ${result} should be ${strRev}`;
+          throw new Error(`Did not properly reverse the array,\n    was ${result} should be ${strRev}`);
         }
       }
     ],

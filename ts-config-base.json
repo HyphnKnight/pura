@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "diagnostics": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "es6",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "pretty": true,
+    "sourceMap": false,
+    "strictNullChecks": true,
+    "target": "esnext"
+  }
+}

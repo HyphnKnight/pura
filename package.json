@@ -4,11 +4,15 @@
   "description": "functional utilities collection",
   "scripts": {
     "deploy": "node deploy.js",
-    "compile": "rm -rf ./dist && tsc -p ./ts-config.json",
+    "compile:src": "rm -rf ./dist && tsc -p ./ts-config.json",
     "ts-node": "TS_NODE_COMPILER_OPTIONS=\"{\\\"module\\\":\\\"commonjs\\\"}\" ts-node",
     "test": "npm run ts-node ./tests/index.ts",
-    "lint": "tslint -p ts-config.json -c ./tslint.json ./src/**/*.ts ./tests/**/*.ts",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:src": "tslint -p ts-config.json -c ./tslint.json ./src/**/*.ts",
+    "lint:tests": "tslint -p ts-config-base.json -c ./tslint.json ./tests/*.ts",
+    "lint:all": "npm run lint:tests && npm run lint:src",
+    "lint:src:fix": "npm run lint:src -- --fix",
+    "lint:tests:fix": "npm run lint:tests -- --fix",
+    "lint:all:fix": "npm run lint:tests:fix && npm run lint:src:fix"
   },
   "author": "Rafe Lepre",
   "license": "MIT",
@@ -16,6 +20,6 @@
     "ts-node": "^4.1.0",
     "tslint": "^5.9.1",
     "tslint-eslint-rules": "^4.1.1",
-    "typescript": "^2.8.0-dev.20180206"
+    "typescript": "^2.7.2"
   }
 }
