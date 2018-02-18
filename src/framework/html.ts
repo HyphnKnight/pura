@@ -33,6 +33,9 @@ const isNumberChar =
 
 const parser =
   (html: string, eventMap: Map<string, EventCallback>, tags: Map<string, Tag | HTMLTag>): Tag => {
+    if(html[0] !== '<') {
+      throw new Error(`Invalid first character, must be a '<' found a ${html[0]}`);
+    }
     const content: Tag[] = [];
     let activeTag: null | Tag = null;
     let cIndex = -1;
@@ -70,6 +73,7 @@ const parser =
 
         if (char === '>') {
           activeTag = content[cIndex];
+          activeString = activeString.toUpperCase();
           if (activeTag.name === activeString) {
             activeString = '';
             const parent = content[--cIndex];
@@ -82,7 +86,7 @@ const parser =
             throw new Error(`Invalid html attempting to close ${activeString} before closing ${content[cIndex].name}.`);
           }
         } else {
-          throw new Error(`Invalid end tag discovered expected closing '>' found ${char}`);
+          throw new Error(`Invalid end tag discovered expected closing '>' found ${char}.`);
         }
 
       } else if (char === '<') {
@@ -92,7 +96,7 @@ const parser =
 
         // check for proper tag name start char
         if (!isAlphaChar(char)) {
-          throw new Error(`Invalid tag name discovered first character can't be ${char}`);
+          throw new Error(`Invalid tag name discovered first character can't be ${char}.`);
         }
 
         // loop through tag name
@@ -123,7 +127,7 @@ const parser =
             // loop through name
             if (!isAlphaChar(char)) {
 
-              throw new Error(`Invalid property name discovered first character can't be ${char}`);
+              throw new Error(`Invalid property name discovered first character can't be ${char}.`);
             }
 
             // loop through property name
@@ -274,5 +278,5 @@ export const tag =
       const parameter = parseParameter(events, tags, parameters[i]);
       if (parameter) htmlText += parameter;
     }
-    return parser(htmlText, events, tags);
+    return parser(htmlText.trim(), events, tags);
   };

@@ -22,7 +22,7 @@ const getAttributes =
   (el: HTMLElement): { [prop: string]: string } => {
     const result: { [prop: string]: string } = {};
     forEach(
-      [...(Array.from(el.attributes))],
+      [...Array.from(el.attributes)],
       (node) => result[node.nodeName] = node.nodeValue || '',
     );
     return result;
@@ -100,10 +100,10 @@ export const render =
         while (++childTagIndex < childTags.length) {
           const childTag = childTags[childTagIndex];
           const childElement = childNodes[childTagIndex];
-          if (isString(tag)) {
+          if (isString(childTag)) {
             if (childElement && childElement.nodeType === Node.TEXT_NODE) {
-              if (tag !== '') {
-                if (childElement.nodeValue !== tag) childElement.nodeValue = tag;
+              if (childTag !== '') {
+                if (childElement.nodeValue !== childTag) childElement.nodeValue = childTag;
               } else {
                 childElement.remove();
               }
@@ -112,8 +112,8 @@ export const render =
                 const removeEl = childNodes.pop();
                 if (removeEl) (removeEl as HTMLElement).remove();
               }
-              if (tag !== '') {
-                parent.appendChild(document.createTextNode(tag));
+              if (childTag !== '') {
+                parent.appendChild(document.createTextNode(childTag));
               }
             }
           } else if (isTag(childTag)) {
@@ -124,11 +124,12 @@ export const render =
                 if (removeEl) (removeEl as HTMLElement).remove();
               }
               tagRef = document.createElement(childTag.name);
+              parent.appendChild(tagRef);
             }
             applyTagPropsToElement(childTag, tagRef);
             if (childTag.children.length) {
               nextTags.push([
-                childElement,
+                tagRef,
                 childTag.children,
               ]);
             }

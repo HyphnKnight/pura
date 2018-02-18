@@ -7,7 +7,7 @@
     "compile:src": "rm -rf ./dist && tsc -p ./ts-config.json",
     "ts-node": "TS_NODE_COMPILER_OPTIONS=\"{\\\"module\\\":\\\"commonjs\\\"}\" ts-node",
     "test:unit": "npm run ts-node ./tests/index.ts",
-    "test:browser": "npm run compile:src && rollup tests/browser.js --o tests/browser/index.js --f iife",
+    "test:browser": "npm run compile:src && rollup -c",
     "lint:src": "tslint -p ts-config.json -c ./tslint.json ./src/**/*.ts",
     "lint:tests": "tslint -p ts-config-base.json -c ./tslint.json ./tests/*.ts",
     "lint:all": "npm run lint:tests && npm run lint:src",
@@ -19,6 +19,7 @@
   "license": "MIT",
   "devDependencies": {
     "rollup": "^0.56.1",
+    "rollup-plugin-node-resolve": "^3.0.3",
     "ts-node": "^4.1.0",
     "tslint": "^5.9.1",
     "tslint-eslint-rules": "^4.1.1",
