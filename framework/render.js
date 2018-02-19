@@ -4,7 +4,7 @@ import { attachEvent } from './events';
 import { isHTMLTag, isTag, } from './types';
 const getAttributes = (el) => {
     const result = {};
-    forEach([...(Array.from(el.attributes))], (node) => result[node.nodeName] = node.nodeValue || '');
+    forEach([...Array.from(el.attributes)], (node) => result[node.nodeName] = node.nodeValue || '');
     return result;
 };
 // This is ok because this will only ever come from one location.
@@ -66,11 +66,11 @@ export const render = (tag, target) => {
             while (++childTagIndex < childTags.length) {
                 const childTag = childTags[childTagIndex];
                 const childElement = childNodes[childTagIndex];
-                if (isString(tag)) {
+                if (isString(childTag)) {
                     if (childElement && childElement.nodeType === Node.TEXT_NODE) {
-                        if (tag !== '') {
-                            if (childElement.nodeValue !== tag)
-                                childElement.nodeValue = tag;
+                        if (childTag !== '') {
+                            if (childElement.nodeValue !== childTag)
+                                childElement.nodeValue = childTag;
                         }
                         else {
                             childElement.remove();
@@ -82,8 +82,8 @@ export const render = (tag, target) => {
                             if (removeEl)
                                 removeEl.remove();
                         }
-                        if (tag !== '') {
-                            parent.appendChild(document.createTextNode(tag));
+                        if (childTag !== '') {
+                            parent.appendChild(document.createTextNode(childTag));
                         }
                     }
                 }
@@ -96,11 +96,12 @@ export const render = (tag, target) => {
                                 removeEl.remove();
                         }
                         tagRef = document.createElement(childTag.name);
+                        parent.appendChild(tagRef);
                     }
                     applyTagPropsToElement(childTag, tagRef);
                     if (childTag.children.length) {
                         nextTags.push([
-                            childElement,
+                            tagRef,
                             childTag.children,
                         ]);
                     }

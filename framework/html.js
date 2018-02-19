@@ -8,6 +8,9 @@ const isWhitespaceChar = (c) => c === '\n' ||
     c === '\t';
 const isNumberChar = (c) => c >= '0' && c <= '9';
 const parser = (html, eventMap, tags) => {
+    if (html[0] !== '<') {
+        throw new Error(`Invalid first character, must be a '<' found a ${html[0]}`);
+    }
     const content = [];
     let activeTag = null;
     let cIndex = -1;
@@ -40,6 +43,7 @@ const parser = (html, eventMap, tags) => {
                 char = html[++i];
             if (char === '>') {
                 activeTag = content[cIndex];
+                activeString = activeString.toUpperCase();
                 if (activeTag.name === activeString) {
                     activeString = '';
                     const parent = content[--cIndex];
@@ -55,7 +59,7 @@ const parser = (html, eventMap, tags) => {
                 }
             }
             else {
-                throw new Error(`Invalid end tag discovered expected closing '>' found ${char}`);
+                throw new Error(`Invalid end tag discovered expected closing '>' found ${char}.`);
             }
         }
         else if (char === '<') {
@@ -64,7 +68,7 @@ const parser = (html, eventMap, tags) => {
             char = html[++i];
             // check for proper tag name start char
             if (!isAlphaChar(char)) {
-                throw new Error(`Invalid tag name discovered first character can't be ${char}`);
+                throw new Error(`Invalid tag name discovered first character can't be ${char}.`);
             }
             // loop through tag name
             while (!isWhitespaceChar(char) && (isAlphaChar(char) || char === '-' || isNumberChar(char)) && char) {
@@ -91,7 +95,7 @@ const parser = (html, eventMap, tags) => {
                         char = html[++i];
                     // loop through name
                     if (!isAlphaChar(char)) {
-                        throw new Error(`Invalid property name discovered first character can't be ${char}`);
+                        throw new Error(`Invalid property name discovered first character can't be ${char}.`);
                     }
                     // loop through property name
                     while (!isWhitespaceChar(char) && (isAlphaChar(char) || char === '-' || isNumberChar(char)) && char) {
@@ -228,5 +232,5 @@ export const tag = (str, ...parameters) => {
         if (parameter)
             htmlText += parameter;
     }
-    return parser(htmlText, events, tags);
+    return parser(htmlText.trim(), events, tags);
 };
