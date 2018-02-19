@@ -33,7 +33,7 @@ const isNumberChar =
 
 const parser =
   (html: string, eventMap: Map<string, EventCallback>, tags: Map<string, Tag | HTMLTag>): Tag => {
-    if(html[0] !== '<') {
+    if (html[0] !== '<') {
       throw new Error(`Invalid first character, must be a '<' found a ${html[0]}`);
     }
     const content: Tag[] = [];
