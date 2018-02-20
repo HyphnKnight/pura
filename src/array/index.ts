@@ -58,6 +58,15 @@ export const filter =
       [],
     );
 
+export const indexOf =
+  <T>(array: T[], value: T): number | null => {
+    let i = -1;
+    while (++i < array.length) {
+      if (array[i] === value) return i;
+    }
+    return null;
+  };
+
 export function find<T>(array: T[], func: iterator<T, boolean>): T | null {
   let i = -1;
   while (++i < array.length) {
@@ -75,11 +84,11 @@ export function times<T>(length: number, func: timesIterator<T>): T[] {
 
 export const difference =
   <T>(array: T[], targetArray: T[]): T[] =>
-    filter(array, (val: T) => targetArray.indexOf(val) === -1);
+    filter(array, (val: T) => indexOf(targetArray, val) === null);
 
 export const intersection =
   <T>(array: T[], targetArray: T[]): T[] =>
-    filter(array, (val: T) => targetArray.indexOf(val) !== -1);
+    filter(array, (val: T) => indexOf(targetArray, val) !== null);
 
 export const flatten =
   <T>(array: T[][]): T[] =>
@@ -87,7 +96,7 @@ export const flatten =
 
 export const unique =
   <T>(array: T[]): T[] =>
-    filter(array, (value: T, index: number, self: T[]) => self.indexOf(value) === index);
+    filter(array, (value: T, index: number, self: T[]) => indexOf(self, value) === index);
 
 export const uniqueBy =
   <T>(array: T[], func: iterator<T, number | boolean | string | symbol | (() => void)>): T[] => {
@@ -96,7 +105,7 @@ export const uniqueBy =
     let i = -1;
     while (++i < array.length) {
       const key = func(array[i], i, array);
-      if (resultKeys.indexOf(key) === -1) {
+      if (indexOf(resultKeys, key) === null) {
         result.push(array[i]);
         resultKeys.push(key);
       }
@@ -145,7 +154,7 @@ export const heuristicFind =
 
 export const contains =
   <T>(array: T[], value: T): boolean =>
-    array.indexOf(value) !== -1;
+    indexOf(array, value) !== null;
 
 export const copy =
   <T>(array: T[]): T[] =>
@@ -160,7 +169,7 @@ export const clear =
 export const remove =
   <T>(array: T[], value: T): T[] => {
     const result = copy(array);
-    if (array.indexOf(value) !== -1) result.splice(array.indexOf(value), 1);
+    if (indexOf(array, value) !== null) result.splice(indexOf(array, value), 1);
     return result;
   };
 
