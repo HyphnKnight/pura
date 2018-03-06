@@ -169,7 +169,8 @@ export const clear =
 export const remove =
   <T>(array: T[], value: T): T[] => {
     const result = copy(array);
-    if (indexOf(array, value) !== null) result.splice(indexOf(array, value), 1);
+    const valueIndex = indexOf(array, value);
+    if (valueIndex !== null) result.splice(valueIndex, 1);
     return result;
   };
 
