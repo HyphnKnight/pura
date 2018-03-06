@@ -20,7 +20,15 @@ const map = (array, func) => reduce(array, (result, value, index, self) => {
 const filter = (array, func = (x) => !!x) => reduce(array, (result, value, index, self) => func(value, index, self)
     ? (result.push(value), result)
     : result, []);
-const unique = (array) => filter(array, (value, index, self) => self.indexOf(value) === index);
+const indexOf = (array, value) => {
+    let i = -1;
+    while (++i < array.length) {
+        if (array[i] === value)
+            return i;
+    }
+    return null;
+};
+const unique = (array) => filter(array, (value, index, self) => indexOf(self, value) === index);
 
 /* General Type Discovery */
 const is = (func = (x) => !!x) => (unknown) => func(unknown);
@@ -202,9 +210,9 @@ const parser = (html, eventMap, tags) => {
         else {
             // string handling
             while (char !== '<' && char) {
-                if (char === 't' && html[i + 1] === 'a' && html[i + 2] === 'g' && html[i + 3] === '_' && html[i + 12] === '_') {
-                    buildingTag = html.slice(i, i + 13);
-                    i += 13;
+                if (char === 't' && html[i + 1] === 'a' && html[i + 2] === 'g' && html[i + 3] === '_' && html[i + 13] === '_') {
+                    buildingTag = html.slice(i, i + 14);
+                    i += 14;
                     const insertTag = tags.get(buildingTag);
                     if (insertTag) {
                         content[cIndex].children.push(activeString, insertTag);
@@ -413,6 +421,10 @@ const render = (tag, target) => {
     return target;
 };
 
+const testInsertedTag = tag`
+<a href="/">this is a test</a>
+`;
+
 const testStringInsert = `\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed posuere quam \
 scelerisque elit venenatis, vel feugiat augue commodo. Nam vel pulvinar sem. \
@@ -427,6 +439,7 @@ renderToBody(tag`
   <body>
     <h1>Test header</h1>
     <p>${testStringInsert}</p>
+    ${testInsertedTag}
   </body>
 `);
 

@@ -1,6 +1,9 @@
 import {tag} from '../dist/framework/html.js';
 import {renderToBody} from '../dist/framework/render.js';
 
+const testInsertedTag = tag`
+<a href="/">this is a test</a>
+`;
 
 const testStringInsert = `\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed posuere quam \
@@ -16,5 +19,6 @@ renderToBody(tag`
   <body>
     <h1>Test header</h1>
     <p>${testStringInsert}</p>
+    ${testInsertedTag}
   </body>
 `);
