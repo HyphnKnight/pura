@@ -158,9 +158,9 @@ const parser = (html, eventMap, tags) => {
         else {
             // string handling
             while (char !== '<' && char) {
-                if (char === 't' && html[i + 1] === 'a' && html[i + 2] === 'g' && html[i + 3] === '_' && html[i + 12] === '_') {
-                    buildingTag = html.slice(i, i + 13);
-                    i += 13;
+                if (char === 't' && html[i + 1] === 'a' && html[i + 2] === 'g' && html[i + 3] === '_' && html[i + 13] === '_') {
+                    buildingTag = html.slice(i, i + 14);
+                    i += 14;
                     const insertTag = tags.get(buildingTag);
                     if (insertTag) {
                         content[cIndex].children.push(activeString, insertTag);

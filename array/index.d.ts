@@ -10,6 +10,7 @@ export declare const mapToObject: <T>(array: T[], func: iterator<T, string>) => 
 };
 export declare const mapToMap: <src, key, value>(array: src[], func: iterator<src, [key, value]>) => Map<key, value>;
 export declare const filter: <T, R extends T>(array: T[], func?: iterator<T, boolean>) => R[];
+export declare const indexOf: <T>(array: T[], value: T) => number | null;
 export declare function find<T>(array: T[], func: iterator<T, boolean>): T | null;
 export declare function times<T>(length: number, func: timesIterator<T>): T[];
 export declare const difference: <T>(array: T[], targetArray: T[]) => T[];

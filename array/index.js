@@ -28,6 +28,14 @@ export const mapToMap = (array, func) => new Map(map(array, func));
 export const filter = (array, func = (x) => !!x) => reduce(array, (result, value, index, self) => func(value, index, self)
     ? (result.push(value), result)
     : result, []);
+export const indexOf = (array, value) => {
+    let i = -1;
+    while (++i < array.length) {
+        if (array[i] === value)
+            return i;
+    }
+    return null;
+};
 export function find(array, func) {
     let i = -1;
     while (++i < array.length) {
@@ -43,17 +51,17 @@ export function times(length, func) {
         result.push(func(i, length));
     return result;
 }
-export const difference = (array, targetArray) => filter(array, (val) => targetArray.indexOf(val) === -1);
-export const intersection = (array, targetArray) => filter(array, (val) => targetArray.indexOf(val) !== -1);
+export const difference = (array, targetArray) => filter(array, (val) => indexOf(targetArray, val) === null);
+export const intersection = (array, targetArray) => filter(array, (val) => indexOf(targetArray, val) !== null);
 export const flatten = (array) => [].concat(...array);
-export const unique = (array) => filter(array, (value, index, self) => self.indexOf(value) === index);
+export const unique = (array) => filter(array, (value, index, self) => indexOf(self, value) === index);
 export const uniqueBy = (array, func) => {
     const result = [];
     const resultKeys = [];
     let i = -1;
     while (++i < array.length) {
         const key = func(array[i], i, array);
-        if (resultKeys.indexOf(key) === -1) {
+        if (indexOf(resultKeys, key) === null) {
             result.push(array[i]);
             resultKeys.push(key);
         }
@@ -83,7 +91,7 @@ export const reverse = (array) => {
     return result;
 };
 export const heuristicFind = (sort) => (array, func) => sort(array, func)[0];
-export const contains = (array, value) => array.indexOf(value) !== -1;
+export const contains = (array, value) => indexOf(array, value) !== null;
 export const copy = (array) => array.slice(0);
 export const clear = (array) => {
     while (array.length)
@@ -92,8 +100,9 @@ export const clear = (array) => {
 };
 export const remove = (array, value) => {
     const result = copy(array);
-    if (array.indexOf(value) !== -1)
-        result.splice(array.indexOf(value), 1);
+    const valueIndex = indexOf(array, value);
+    if (valueIndex !== null)
+        result.splice(valueIndex, 1);
     return result;
 };
 export const add = (array, value, index = 0) => {
