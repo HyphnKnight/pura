@@ -63,7 +63,7 @@ const applyTagPropsToElement =
       (propName) => {
         if (typeof tag.attributes[propName] === 'undefined') {
           target.removeAttribute(propName);
-        } else if (propName.toLowerCase().slice(0, 1) === 'on') {
+        } else if (propName.toLowerCase().slice(0, 2) === 'on') {
           attachEvent(target, propName.slice(2).toLowerCase(), tag.attributes[propName] as EventCallback);
         } else if (isBoolean(tag.attributes[propName])) {
           if (!tag.attributes[propName] && !!target.getAttribute(propName)) {
