@@ -28,7 +28,7 @@ const applyTagPropsToElement = (tag, target) => {
         if (typeof tag.attributes[propName] === 'undefined') {
             target.removeAttribute(propName);
         }
-        else if (propName.toLowerCase().slice(0, 1) === 'on') {
+        else if (propName.toLowerCase().slice(0, 2) === 'on') {
             attachEvent(target, propName.slice(2).toLowerCase(), tag.attributes[propName]);
         }
         else if (isBoolean(tag.attributes[propName])) {
