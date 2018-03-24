@@ -61,7 +61,7 @@ const applyTagPropsToElement =
         ...Object.keys(tag.attributes),
       ]),
       (propName) => {
-        if (typeof tag.attributes[propName] === 'undefined') {
+        if (typeof tag.attributes[propName] === 'undefined' || tag.attributes[propName] === false) {
           target.removeAttribute(propName);
         } else if (propName.toLowerCase().slice(0, 2) === 'on') {
           attachEvent(target, propName.slice(2).toLowerCase(), tag.attributes[propName] as EventCallback);
