@@ -1,24 +1,74 @@
-import {tag} from '../dist/framework/html.js';
-import {renderToBody} from '../dist/framework/render.js';
+import { tag } from '../dist/framework/html.js';
+import { renderToBody } from '../dist/framework/render.js';
+import {
+  createTextInput,
+  createPasswordInput,
+  createSearchInput,
+  createCheckbox,
+  createRadioInput,
+} from '../dist/framework/components/input';
+import { createStore } from '../dist/store';
 
 const testInsertedTag = tag`
 <a href="/">this is a test</a>
 `;
 
-const testStringInsert = `\
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed posuere quam \
-scelerisque elit venenatis, vel feugiat augue commodo. Nam vel pulvinar sem. \
-Pellentesque egestas augue non vestibulum fermentum. Mauris fermentum orci \
-non ultricies vulputate. Nunc at ornare dui. Mauris eget elit non ipsum \
-imperdiet porta. Aenean eget ultricies magna. Etiam a nisl nec urna imperdiet mattis. \
-Maecenas tincidunt justo at purus suscipit commodo. Nam vitae velit lacinia, \
-sodales est vitae, venenatis felis.\
-`;
+const state = createStore({
+  value: 'test',
+  password: '',
+  search: '',
+  checkbox: false,
+  radio: false,
+});
 
-renderToBody(tag`
+window.state = state;
+
+const SampleInput = createTextInput({
+  label:'username',
+  onInput: (value) => state.value = value,
+  value: '',
+});
+const passwordTest = /[A-z0-9]+/;
+const SamplePassword = createPasswordInput({
+  label:'password',
+  onInput :(value) => {
+    if (passwordTest.test(value)) {
+      state.password = value.toLowerCase();
+    }
+  }
+});
+const SampleSearch = createSearchInput({
+  label: 'search',
+  onInput: (value) => {
+    state.search = value;
+  },
+})
+const SampleCheckbox = createCheckbox({
+  label:'add email',
+  onInput:(value) => state.checkbox = value,
+});
+const SampleRadio = createRadioInput({
+  onInput: value => console.log(state.radio = value),
+  options: [
+    'option A',
+    'option B',
+    'option C',
+  ]
+});
+
+state.subscribe((state) => renderToBody(tag`
   <body>
-    <h1>Test header</h1>
-    <p>${testStringInsert}</p>
+    <h1>${state.value}</h1>
     ${testInsertedTag}
+    ${SampleInput({value:state.value})}
+    <span>${state.password}</span>
+    ${SamplePassword({value:state.password})}
+    ${SampleSearch({value:state.search})}
+    <span>${state.checkbox?'checked':'unchecked'}</span>
+    ${SampleCheckbox({value:state.checkbox})}
+    <span>${state.radio}</span>
+    ${SampleRadio({value:state.radio})}
   </body>
-`);
+`));
+
+state.value = 'something';

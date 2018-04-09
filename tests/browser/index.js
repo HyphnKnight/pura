@@ -28,20 +28,78 @@ const indexOf = (array, value) => {
     }
     return null;
 };
+function find(array, func) {
+    let i = -1;
+    while (++i < array.length) {
+        if (func(array[i], i, array))
+            return array[i];
+    }
+    return null;
+}
 const unique = (array) => filter(array, (value, index, self) => indexOf(self, value) === index);
 
 /* General Type Discovery */
 const is = (func = (x) => !!x) => (unknown) => func(unknown);
 
+/* Type Testing */
+const isNull = is((u) => u === null);
 const isUndefined = is((u) => typeof u === 'undefined');
+const isNullOrUndefined = is((u) => isNull(u) || isUndefined(u));
 const isString = is((u) => typeof u === 'string');
 const isNumber = is((u) => typeof u === 'number');
 const isBoolean = is((u) => typeof u === 'boolean');
 const isFunction = is((u) => !!u && u.constructor && u.call && u.apply);
 const isArray = is((u) => Array.isArray(u));
+const isMap = is((u) => !!u && u.__proto__ === Map.prototype);
+const isSet = is((u) => !!u && u.__proto__ === Set.prototype);
+const isObjectLiteral = is((u) => {
+    if (!u || typeof u !== 'object')
+        return false;
+    let tmp = u;
+    while (true) {
+        tmp = Object.getPrototypeOf(tmp);
+        if (tmp === null) {
+            break;
+        }
+    }
+    return Object.getPrototypeOf(u) === tmp;
+});
 const isNode = is((u) => typeof Node === 'object'
     ? u instanceof Node
     : u && typeof u === 'object' && typeof u.nodeType === 'number' && typeof u.nodeName === 'string');
+const isComparable = is((u) => isNullOrUndefined(u) ||
+    isNumber(u) ||
+    isBoolean(u) ||
+    isString(u) ||
+    isFunction(u) ||
+    typeof u === 'symbol');
+/* Comparison */
+function isEqual(valueA, valueB) {
+    if (isComparable(valueA) && isComparable(valueB)) {
+        return valueA === valueB;
+    }
+    else if (isArray(valueA) && isArray(valueB)) {
+        return valueA.length === valueB.length &&
+            !find(valueA, (value, index) => !isEqual(value, valueB[index]));
+    }
+    else if (isObjectLiteral(valueA) && isObjectLiteral(valueB)) {
+        const keysA = Object.keys(valueA);
+        const keysB = Object.keys(valueB);
+        return keysA.length === keysB.length &&
+            !find(keysA, (key) => !isEqual(valueA[key], valueB[key]));
+    }
+    else if (isMap(valueA) && isMap(valueB)) {
+        const keysA = [...valueA.keys()];
+        const keysB = [...valueB.keys()];
+        return keysA.length === keysB.length &&
+            !find(keysA, (key) => !isEqual(valueA.get(key), valueB.get(key)));
+    }
+    else if (isSet(valueA) && isSet(valueB)) {
+        return valueA.size === valueB.size &&
+            isEqual([...valueA.entries()], [...valueB.entries()]);
+    }
+    return false;
+}
 
 const uniqueId = () => Math.random().toString(36).substr(2, 9);
 
@@ -59,18 +117,68 @@ const isWhitespaceChar = (c) => c === '\n' ||
     c === ' ' ||
     c === '\t';
 const isNumberChar = (c) => c >= '0' && c <= '9';
-const parser = (html, eventMap, tags) => {
+const events = new Map();
+const tags = new Map();
+const primitives = new Map();
+const parseParameter = (parameter) => {
+    if (isNullOrUndefined(parameter)) {
+        return null;
+    }
+    else if (isString(parameter)) {
+        return String(parameter);
+    }
+    else if (isNumber(parameter) || isBoolean(parameter)) {
+        const paramKey = `prm_${uniqueId()}_`;
+        primitives.set(paramKey, parameter);
+        return paramKey;
+    }
+    else if (isFunction(parameter)) {
+        const eventKey = `evt_${uniqueId()}_`;
+        events.set(eventKey, parameter);
+        return eventKey;
+    }
+    else if (isTag(parameter)) {
+        const tagKey = `tag_${uniqueId()}_`;
+        tags.set(tagKey, parameter);
+        return tagKey;
+    }
+    else if (isArray(parameter) && parameter.length) {
+        let html = '';
+        forEach(parameter, (param) => html += parseParameter(param));
+        return html;
+    }
+    else if (isNode(parameter)) {
+        const tagKey = `tag_${uniqueId()}_`;
+        const newHTMLTag = {
+            name: parameter.tagName,
+            element: parameter,
+        };
+        tags.set(tagKey, newHTMLTag);
+        return tagKey;
+    }
+    return null;
+};
+const tag = (str, ...parameters) => {
+    let html = '';
+    let i = -1;
+    while (++i < str.length) {
+        html += str[i];
+        const parameter = parseParameter(parameters[i]);
+        if (parameter !== null)
+            html += parameter;
+    }
+    html = html.trim();
     if (html[0] !== '<') {
         throw new Error(`Invalid first character, must be a '<' found a ${html[0]}`);
     }
     const content = [];
     let activeTag = null;
     let cIndex = -1;
-    let i = -1;
     let char = '';
     let activeString = '';
     let attrName = '';
     let buildingTag = '';
+    i = -1;
     while (i < html.length) {
         char = html[++i];
         activeString = '';
@@ -145,7 +253,6 @@ const parser = (html, eventMap, tags) => {
                     // loop past whitespace
                     while (isWhitespaceChar(char))
                         char = html[++i];
-                    // loop through name
                     if (!isAlphaChar(char)) {
                         throw new Error(`Invalid property name discovered first character can't be ${char}.`);
                     }
@@ -172,7 +279,15 @@ const parser = (html, eventMap, tags) => {
                                 char = html[++i];
                             }
                             char = html[++i];
-                            activeTag.attributes[attrName] = eventMap.get(activeString) || activeString;
+                            if (events.has(activeString)) {
+                                activeTag.attributes[attrName] = events.get(activeString);
+                            }
+                            else if (primitives.has(activeString)) {
+                                activeTag.attributes[attrName] = primitives.get(activeString);
+                            }
+                            else {
+                                activeTag.attributes[attrName] = activeString;
+                            }
                             activeString = '';
                         }
                         else {
@@ -188,9 +303,9 @@ const parser = (html, eventMap, tags) => {
                 }
                 if (char !== '>') {
                     // this is self closing
-                    i += 2;
+                    ++i;
                     if (content[cIndex - 1]) {
-                        const parent = content[cIndex - 1];
+                        const parent = content[--cIndex];
                         parent.children.push(activeTag);
                     }
                     else {
@@ -212,7 +327,7 @@ const parser = (html, eventMap, tags) => {
             while (char !== '<' && char) {
                 if (char === 't' && html[i + 1] === 'a' && html[i + 2] === 'g' && html[i + 3] === '_' && html[i + 13] === '_') {
                     buildingTag = html.slice(i, i + 14);
-                    i += 14;
+                    i += 13;
                     const insertTag = tags.get(buildingTag);
                     if (insertTag) {
                         content[cIndex].children.push(activeString, insertTag);
@@ -221,6 +336,12 @@ const parser = (html, eventMap, tags) => {
                     else {
                         activeString += buildingTag;
                     }
+                }
+                else if (char === 'p' && html[i + 1] === 'r' && html[i + 2] === 'm' && html[i + 3] === '_' && html[i + 13] === '_') {
+                    buildingTag = html.slice(i, i + 14);
+                    i += 13;
+                    const insertString = primitives.get(buildingTag);
+                    activeString += insertString;
                 }
                 else {
                     activeString += char;
@@ -240,59 +361,46 @@ const parser = (html, eventMap, tags) => {
         return content[cIndex];
     }
 };
-const parseParameter = (events, tags, parameter) => {
-    if (isUndefined(parameter) || (!parameter && isBoolean(parameter))) {
-        return null;
-    }
-    else if (isString(parameter) || isNumber(parameter) || isBoolean(parameter)) {
-        return String(parameter);
-    }
-    else if (isFunction(parameter)) {
-        const eventKey = `evt_${uniqueId()}_`;
-        events.set(eventKey, parameter);
-        return eventKey;
-    }
-    else if (isTag(parameter)) {
-        const tagKey = `tag_${uniqueId()}_`;
-        tags.set(tagKey, parameter);
-        return tagKey;
-    }
-    else if (isArray(parameter) && parameter.length) {
-        let html = '';
-        forEach(parameter, (param) => html += parseParameter(events, tags, param));
-        return html;
-    }
-    else if (isNode(parameter)) {
-        const tagKey = `tag_${uniqueId()}_`;
-        const newHTMLTag = {
-            name: parameter.tagName,
-            element: parameter,
-        };
-        tags.set(tagKey, newHTMLTag);
-        return tagKey;
-    }
-    return null;
-};
-const tag = (str, ...parameters) => {
-    const events = new Map();
-    const tags = new Map();
-    let htmlText = '';
-    let i = -1;
-    while (++i < str.length) {
-        htmlText += str[i];
-        const parameter = parseParameter(events, tags, parameters[i]);
-        if (parameter)
-            htmlText += parameter;
-    }
-    return parser(htmlText.trim(), events, tags);
-};
 
-const events = new Map();
+function debounce(func, wait, leading = true, maxWait = Number.MAX_VALUE) {
+    let invokeTime = 0;
+    if (leading) {
+        return function debounceLeadingInside(...args) {
+            const time = Date.now();
+            if (time - invokeTime > wait) {
+                invokeTime = Date.now();
+                func(...args);
+            }
+        };
+    }
+    else {
+        let attemptedInvoke = 0;
+        let delay;
+        return function debounceTrailingInside(...args) {
+            const time = Date.now();
+            if (attemptedInvoke === 0) {
+                attemptedInvoke = time;
+            }
+            if (!!delay && time - attemptedInvoke < maxWait) {
+                window.clearTimeout(delay);
+            }
+            if (time - attemptedInvoke < maxWait) {
+                delay = setTimeout(() => {
+                    attemptedInvoke = 0;
+                    func(...args);
+                }, wait);
+            }
+        };
+    }
+}
+
+const events$1 = new Map();
+const auditEvents = debounce((parent = document.body) => events$1.forEach((eventMap) => eventMap.forEach((_, el) => !parent.contains(el) && eventMap.delete(el))), 16, false, 32);
 const attachEvent = (el, type, func) => {
-    let typeMap = events.get(type);
+    let typeMap = events$1.get(type);
     if (!typeMap) {
         typeMap = new Map();
-        events.set(type, typeMap);
+        events$1.set(type, typeMap);
         document.body.addEventListener(type, (event) => {
             const callback = typeMap.get(event.target);
             if (callback)
@@ -300,6 +408,7 @@ const attachEvent = (el, type, func) => {
         });
     }
     typeMap.set(el, func);
+    auditEvents(document.body);
 };
 
 const getAttributes = (el) => {
@@ -325,10 +434,10 @@ const applyTagPropsToElement = (tag, target) => {
         ...Object.keys(getAttributes(target)),
         ...Object.keys(tag.attributes),
     ]), (propName) => {
-        if (typeof tag.attributes[propName] === 'undefined') {
+        if (typeof tag.attributes[propName] === 'undefined' || tag.attributes[propName] === false) {
             target.removeAttribute(propName);
         }
-        else if (propName.toLowerCase().slice(0, 1) === 'on') {
+        else if (propName.toLowerCase().slice(0, 2) === 'on') {
             attachEvent(target, propName.slice(2).toLowerCase(), tag.attributes[propName]);
         }
         else if (isBoolean(tag.attributes[propName])) {
@@ -421,26 +530,263 @@ const render = (tag, target) => {
     return target;
 };
 
+const createTextInput = (initConfig) => {
+    const element = document.createElement('field-set');
+    const id = uniqueId();
+    const config = Object.assign({}, initConfig);
+    return (props) => {
+        Object.assign(config, initConfig, props);
+        return render(tag `
+        <field-set>
+          <label for="${id}" >${config.label}</label>
+          <input
+            id="${id}"
+            type="text"
+            disabled="${config.disabled || false}"
+            placeholder="${config.placeholder || ''}"
+            autocomplete="${config.autocomplete || 'none'}"
+            value="${config.value}"
+            oninput="${event => config.onInput(event.target.value)}"
+          />
+        </field-set>
+      `, element);
+    };
+};
+const createPasswordInput = (initConfig) => {
+    const element = document.createElement('field-set');
+    const id = uniqueId();
+    const config = Object.assign({}, initConfig);
+    return (props) => {
+        Object.assign(config, initConfig, props);
+        return render(tag `
+        <field-set class="--password">
+          <label for="${id}" >${config.label}</label>
+          <input
+            id="${id}"
+            type="password"
+            disabled="${config.disabled || false}"
+            autocomplete="${config.autocomplete || 'none'}"
+            placeholder="${config.placeholder || ''}"
+            value="${config.value}"
+            oninput="${event => config.onInput(event.target.value)}"
+          />
+        </field-set>
+      `, element);
+    };
+};
+const createSearchInput = (initConfig) => {
+    const element = document.createElement('field-set');
+    const id = uniqueId();
+    const config = Object.assign({}, initConfig);
+    return (props) => {
+        Object.assign(config, initConfig, props);
+        return render(tag `
+        <field-set>
+          <label for="${id}" >${config.label}</label>
+          <input
+            id="${id}"
+            list="${`list_${id}`}"
+            type="search"
+            disabled="${config.disabled || false}"
+            placeholder="${config.placeholder || ''}"
+            autocomplete="${config.autocomplete || 'none'}"
+            value="${config.value}"
+            oninput="${event => config.onInput(event.target.value)}"
+          />
+          ${!!config.options ? tag `<datalist id="${`list_${id}`}">
+            ${map(config.options || [], (option) => tag `<option value="${option}" />`)}
+          </datalist>` : null}
+        </field-set>
+      `, element);
+    };
+};
+const createCheckbox = (initConfig) => {
+    const element = document.createElement('field-set');
+    const id = uniqueId();
+    const config = Object.assign({}, initConfig);
+    return (props) => {
+        Object.assign(config, initConfig, props);
+        return render(tag `
+        <field-set>
+          <label for="${id}" >${config.label}</label>
+          <input
+            id="${id}"
+            type="checkbox"
+            disabled="${config.disabled || false}"
+            checked="${config.value}"
+            onchange="${() => config.onInput(!config.value)}"
+          />
+        </field-set>
+      `, element);
+    };
+};
+const createRadioButton = (label, name) => {
+    const element = document.createElement('li');
+    const id = uniqueId();
+    return (config) => render(tag `
+        <li>
+          <label for="${id}" >${label}</label>
+          <input
+            id="${id}"
+            type="radio"
+            name="${name}"
+            disabled="${config.disabled || false}"
+            checked="${config.value === label}"
+            onchange="${() => config.onInput(label)}"
+          />
+        </li>
+      `, element);
+};
+const createRadioInput = (initConfig) => {
+    const element = document.createElement('field-set');
+    const config = Object.assign({}, initConfig);
+    const name = `name_${uniqueId}`;
+    const options = map(config.options, (option) => createRadioButton(option, name));
+    return (props) => {
+        Object.assign(config, initConfig, props);
+        return render(tag `
+        <field-set>
+          <ul>
+            ${map(options, (create) => create(config))}
+          </ul>
+        </field-set>
+      `, element);
+    };
+};
+
+const setStore = (store) => (updateObj) => {
+    const objKeys = Object.keys(updateObj);
+    let oldStore;
+    if (objKeys.map((key) => {
+        if (!isEqual(updateObj[key], store.__store__[key])) {
+            if (!oldStore) {
+                oldStore = Object.assign({}, store.__store__);
+            }
+            store.__store__[key] = updateObj[key];
+            return true;
+        }
+        else {
+            return false;
+        }
+    }).some((x) => x)) {
+        forEach(Object.keys(store.subscriptions), (key) => store.subscriptions[key](store.__store__, oldStore));
+    }
+};
+const protectedSubscribe = (store) => (keys, func) => store.subscribe((newState, oldstate) => find(keys, (key) => newState[key] !== oldstate[key]) &&
+    func(newState, oldstate));
+const createStore = (protoObj) => {
+    const subscriptions = {};
+    const newStore = {
+        subscriptions: {},
+        subscribe: function subscribe(func) {
+            const key = uniqueId();
+            subscriptions[key] = func;
+            return () => {
+                delete subscriptions[key];
+            };
+        },
+        protectedSubscribe: () => () => { throw new Error('Store failed to initialize'); },
+        set: () => { throw new Error('Store failed to initialize'); },
+        [Symbol.iterator]: () => (function iteratorMaker(savedProtoObj) {
+            const objKeys = Object.keys(savedProtoObj);
+            let index = 0;
+            return {
+                next() {
+                    const result = { value: savedProtoObj[objKeys[index]], done: true };
+                    if (index <= objKeys.length - 1) {
+                        result.done = false;
+                        ++index;
+                    }
+                    return result;
+                },
+            };
+        })(protoObj),
+        __store__: {},
+    };
+    forEach(Object.keys(protoObj), (key) => {
+        newStore.__store__[key] = protoObj[key];
+        Object.defineProperty(newStore, key, {
+            set: (value) => {
+                if (!isEqual(value, newStore.__store__[key])) {
+                    const oldStore = Object.assign({}, newStore.__store__);
+                    newStore.__store__[key] = value;
+                    Object.keys(subscriptions).forEach((subKey) => subscriptions[subKey](newStore.__store__, oldStore));
+                }
+            },
+            get: () => newStore.__store__[key]
+        });
+    });
+    Object.defineProperty(newStore, 'JSON', {
+        set: (string) => newStore.set(JSON.parse(string)),
+        get: () => JSON.stringify(newStore.__store__)
+    });
+    newStore.set = setStore(newStore);
+    newStore.protectedSubscribe = protectedSubscribe(newStore);
+    return Object.preventExtensions(newStore);
+};
+
 const testInsertedTag = tag`
 <a href="/">this is a test</a>
 `;
 
-const testStringInsert = `\
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed posuere quam \
-scelerisque elit venenatis, vel feugiat augue commodo. Nam vel pulvinar sem. \
-Pellentesque egestas augue non vestibulum fermentum. Mauris fermentum orci \
-non ultricies vulputate. Nunc at ornare dui. Mauris eget elit non ipsum \
-imperdiet porta. Aenean eget ultricies magna. Etiam a nisl nec urna imperdiet mattis. \
-Maecenas tincidunt justo at purus suscipit commodo. Nam vitae velit lacinia, \
-sodales est vitae, venenatis felis.\
-`;
+const state = createStore({
+  value: 'test',
+  password: '',
+  search: '',
+  checkbox: false,
+  radio: false,
+});
 
-renderToBody(tag`
+window.state = state;
+
+const SampleInput = createTextInput({
+  label:'username',
+  onInput: (value) => state.value = value,
+  value: '',
+});
+const passwordTest = /[A-z0-9]+/;
+const SamplePassword = createPasswordInput({
+  label:'password',
+  onInput :(value) => {
+    if (passwordTest.test(value)) {
+      state.password = value.toLowerCase();
+    }
+  }
+});
+const SampleSearch = createSearchInput({
+  label: 'search',
+  onInput: (value) => {
+    state.search = value;
+  },
+});
+const SampleCheckbox = createCheckbox({
+  label:'add email',
+  onInput:(value) => state.checkbox = value,
+});
+const SampleRadio = createRadioInput({
+  onInput: value => console.log(state.radio = value),
+  options: [
+    'option A',
+    'option B',
+    'option C',
+  ]
+});
+
+state.subscribe((state) => renderToBody(tag`
   <body>
-    <h1>Test header</h1>
-    <p>${testStringInsert}</p>
+    <h1>${state.value}</h1>
     ${testInsertedTag}
+    ${SampleInput({value:state.value})}
+    <span>${state.password}</span>
+    ${SamplePassword({value:state.password})}
+    ${SampleSearch({value:state.search})}
+    <span>${state.checkbox?'checked':'unchecked'}</span>
+    ${SampleCheckbox({value:state.checkbox})}
+    <span>${state.radio}</span>
+    ${SampleRadio({value:state.radio})}
   </body>
-`);
+`));
+
+state.value = 'something';
 
 }());

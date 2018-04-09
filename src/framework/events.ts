@@ -1,6 +1,16 @@
+import { debounce } from '../function';
 import { EventCallback } from './types';
 
 const events: Map<string, Map<HTMLElement, EventCallback>> = new Map();
+
+const auditEvents =
+  debounce((parent: HTMLElement = document.body) =>
+    events.forEach(
+      (eventMap) =>
+        eventMap.forEach(
+          (_, el) => !parent.contains(el) && eventMap.delete(el),
+        )
+    ), 16, false, 320);
 
 export const attachEvent =
   (el: HTMLElement, type: string, func: EventCallback) => {
@@ -14,13 +24,6 @@ export const attachEvent =
       });
     }
     typeMap.set(el, func);
+    auditEvents(document.body);
   };
 
-export const auditEvents =
-  (parent: HTMLElement = document.body) =>
-    events.forEach(
-      (eventMap) =>
-        eventMap.forEach(
-          (_, el) => !parent.contains(el) && eventMap.delete(el),
-        )
-    );
