@@ -25,7 +25,7 @@ const applyTagPropsToElement = (tag, target) => {
         ...Object.keys(getAttributes(target)),
         ...Object.keys(tag.attributes),
     ]), (propName) => {
-        if (typeof tag.attributes[propName] === 'undefined') {
+        if (typeof tag.attributes[propName] === 'undefined' || tag.attributes[propName] === false) {
             target.removeAttribute(propName);
         }
         else if (propName.toLowerCase().slice(0, 2) === 'on') {

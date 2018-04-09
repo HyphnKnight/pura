@@ -1,5 +1,5 @@
 import { forEach } from '../array';
-import { isArray, isBoolean, isFunction, isNode, isNumber, isString, isUndefined, } from '../is/type';
+import { isArray, isBoolean, isFunction, isNode, isNullOrUndefined, isNumber, isString, } from '../is/type';
 import { uniqueId } from '../string';
 import { isTag, } from './types';
 const isAlphaChar = (c) => c >= 'A' && c <= 'z';
@@ -7,18 +7,68 @@ const isWhitespaceChar = (c) => c === '\n' ||
     c === ' ' ||
     c === '\t';
 const isNumberChar = (c) => c >= '0' && c <= '9';
-const parser = (html, eventMap, tags) => {
+const events = new Map();
+const tags = new Map();
+const primitives = new Map();
+const parseParameter = (parameter) => {
+    if (isNullOrUndefined(parameter)) {
+        return null;
+    }
+    else if (isString(parameter)) {
+        return String(parameter);
+    }
+    else if (isNumber(parameter) || isBoolean(parameter)) {
+        const paramKey = `prm_${uniqueId()}_`;
+        primitives.set(paramKey, parameter);
+        return paramKey;
+    }
+    else if (isFunction(parameter)) {
+        const eventKey = `evt_${uniqueId()}_`;
+        events.set(eventKey, parameter);
+        return eventKey;
+    }
+    else if (isTag(parameter)) {
+        const tagKey = `tag_${uniqueId()}_`;
+        tags.set(tagKey, parameter);
+        return tagKey;
+    }
+    else if (isArray(parameter) && parameter.length) {
+        let html = '';
+        forEach(parameter, (param) => html += parseParameter(param));
+        return html;
+    }
+    else if (isNode(parameter)) {
+        const tagKey = `tag_${uniqueId()}_`;
+        const newHTMLTag = {
+            name: parameter.tagName,
+            element: parameter,
+        };
+        tags.set(tagKey, newHTMLTag);
+        return tagKey;
+    }
+    return null;
+};
+export const tag = (str, ...parameters) => {
+    let html = '';
+    let i = -1;
+    while (++i < str.length) {
+        html += str[i];
+        const parameter = parseParameter(parameters[i]);
+        if (parameter !== null)
+            html += parameter;
+    }
+    html = html.trim();
     if (html[0] !== '<') {
         throw new Error(`Invalid first character, must be a '<' found a ${html[0]}`);
     }
     const content = [];
     let activeTag = null;
     let cIndex = -1;
-    let i = -1;
     let char = '';
     let activeString = '';
     let attrName = '';
     let buildingTag = '';
+    i = -1;
     while (i < html.length) {
         char = html[++i];
         activeString = '';
@@ -93,7 +143,6 @@ const parser = (html, eventMap, tags) => {
                     // loop past whitespace
                     while (isWhitespaceChar(char))
                         char = html[++i];
-                    // loop through name
                     if (!isAlphaChar(char)) {
                         throw new Error(`Invalid property name discovered first character can't be ${char}.`);
                     }
@@ -120,7 +169,15 @@ const parser = (html, eventMap, tags) => {
                                 char = html[++i];
                             }
                             char = html[++i];
-                            activeTag.attributes[attrName] = eventMap.get(activeString) || activeString;
+                            if (events.has(activeString)) {
+                                activeTag.attributes[attrName] = events.get(activeString);
+                            }
+                            else if (primitives.has(activeString)) {
+                                activeTag.attributes[attrName] = primitives.get(activeString);
+                            }
+                            else {
+                                activeTag.attributes[attrName] = activeString;
+                            }
                             activeString = '';
                         }
                         else {
@@ -136,9 +193,9 @@ const parser = (html, eventMap, tags) => {
                 }
                 if (char !== '>') {
                     // this is self closing
-                    i += 2;
+                    ++i;
                     if (content[cIndex - 1]) {
-                        const parent = content[cIndex - 1];
+                        const parent = content[--cIndex];
                         parent.children.push(activeTag);
                     }
                     else {
@@ -160,7 +217,7 @@ const parser = (html, eventMap, tags) => {
             while (char !== '<' && char) {
                 if (char === 't' && html[i + 1] === 'a' && html[i + 2] === 'g' && html[i + 3] === '_' && html[i + 13] === '_') {
                     buildingTag = html.slice(i, i + 14);
-                    i += 14;
+                    i += 13;
                     const insertTag = tags.get(buildingTag);
                     if (insertTag) {
                         content[cIndex].children.push(activeString, insertTag);
@@ -169,6 +226,12 @@ const parser = (html, eventMap, tags) => {
                     else {
                         activeString += buildingTag;
                     }
+                }
+                else if (char === 'p' && html[i + 1] === 'r' && html[i + 2] === 'm' && html[i + 3] === '_' && html[i + 13] === '_') {
+                    buildingTag = html.slice(i, i + 14);
+                    i += 13;
+                    const insertString = primitives.get(buildingTag);
+                    activeString += insertString;
                 }
                 else {
                     activeString += char;
@@ -187,50 +250,4 @@ const parser = (html, eventMap, tags) => {
     else {
         return content[cIndex];
     }
-};
-const parseParameter = (events, tags, parameter) => {
-    if (isUndefined(parameter) || (!parameter && isBoolean(parameter))) {
-        return null;
-    }
-    else if (isString(parameter) || isNumber(parameter) || isBoolean(parameter)) {
-        return String(parameter);
-    }
-    else if (isFunction(parameter)) {
-        const eventKey = `evt_${uniqueId()}_`;
-        events.set(eventKey, parameter);
-        return eventKey;
-    }
-    else if (isTag(parameter)) {
-        const tagKey = `tag_${uniqueId()}_`;
-        tags.set(tagKey, parameter);
-        return tagKey;
-    }
-    else if (isArray(parameter) && parameter.length) {
-        let html = '';
-        forEach(parameter, (param) => html += parseParameter(events, tags, param));
-        return html;
-    }
-    else if (isNode(parameter)) {
-        const tagKey = `tag_${uniqueId()}_`;
-        const newHTMLTag = {
-            name: parameter.tagName,
-            element: parameter,
-        };
-        tags.set(tagKey, newHTMLTag);
-        return tagKey;
-    }
-    return null;
-};
-export const tag = (str, ...parameters) => {
-    const events = new Map();
-    const tags = new Map();
-    let htmlText = '';
-    let i = -1;
-    while (++i < str.length) {
-        htmlText += str[i];
-        const parameter = parseParameter(events, tags, parameters[i]);
-        if (parameter)
-            htmlText += parameter;
-    }
-    return parser(htmlText.trim(), events, tags);
 };

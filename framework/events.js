@@ -1,4 +1,6 @@
+import { debounce } from '../function';
 const events = new Map();
+const auditEvents = debounce((parent = document.body) => events.forEach((eventMap) => eventMap.forEach((_, el) => !parent.contains(el) && eventMap.delete(el))), 16, false, 320);
 export const attachEvent = (el, type, func) => {
     let typeMap = events.get(type);
     if (!typeMap) {
@@ -11,5 +13,5 @@ export const attachEvent = (el, type, func) => {
         });
     }
     typeMap.set(el, func);
+    auditEvents(document.body);
 };
-export const auditEvents = (parent = document.body) => events.forEach((eventMap) => eventMap.forEach((_, el) => !parent.contains(el) && eventMap.delete(el)));
