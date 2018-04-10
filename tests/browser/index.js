@@ -558,7 +558,6 @@ const createNumberInput = (initConfig) => {
     const config = Object.assign({ type: 'number' }, initConfig);
     return (props) => {
         Object.assign(config, initConfig, props);
-        console.log(config.value);
         return render(tag `
         <field-set class="--${config.type}">
           <label for="${id}" >${config.label}</label>
@@ -799,11 +798,8 @@ const state = createStore({
   search: '',
   checkbox: false,
   radio: false,
-<<<<<<< HEAD
   age: 0,
-=======
   select: '',
->>>>>>> feature-select-input
 });
 
 window.state = state;
@@ -841,7 +837,6 @@ const SampleRadio = createRadioInput({
   ]
 });
 
-<<<<<<< HEAD
 const SampleNumber = createNumberInput({
   label:'Age',
   onInput:(value) => state.age = value,
@@ -854,7 +849,8 @@ const SampleNumberSlider = createNumberInput({
   min:0,
   step: 5,
   onInput:(value) => state.age = value,
-=======
+});
+
 const SampleSelect = createSelectInput({
   label: 'Select stuff',
   options: [
@@ -874,7 +870,6 @@ const SampleSelect = createSelectInput({
   onInput: (value) => {
     state.select = value;
   },
->>>>>>> feature-select-input
 });
 
 state.subscribe((state) => renderToBody(tag`
@@ -889,14 +884,11 @@ state.subscribe((state) => renderToBody(tag`
     ${SampleCheckbox({value:state.checkbox})}
     <span>${state.radio}</span>
     ${SampleRadio({value:state.radio})}
-<<<<<<< HEAD
     <span>${state.age}</span>
     ${SampleNumber({value:state.age})}
     ${SampleNumberSlider({value:state.age})}
-=======
     <span>${state.select}</span>
     ${SampleSelect({value: state.select})}
->>>>>>> feature-select-input
   </body>
 `));
 
