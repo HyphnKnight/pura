@@ -395,7 +395,7 @@ function debounce(func, wait, leading = true, maxWait = Number.MAX_VALUE) {
 }
 
 const events$1 = new Map();
-const auditEvents = debounce((parent = document.body) => events$1.forEach((eventMap) => eventMap.forEach((_, el) => !parent.contains(el) && eventMap.delete(el))), 16, false, 32);
+const auditEvents = debounce((parent = document.body) => events$1.forEach((eventMap) => eventMap.forEach((_, el) => !parent.contains(el) && eventMap.delete(el))), 16, false, 320);
 const attachEvent = (el, type, func) => {
     let typeMap = events$1.get(type);
     if (!typeMap) {
@@ -537,7 +537,7 @@ const createTextInput = (initConfig) => {
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set>
+        <field-set class="--text">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -547,6 +547,31 @@ const createTextInput = (initConfig) => {
             autocomplete="${config.autocomplete || 'none'}"
             value="${config.value}"
             oninput="${event => config.onInput(event.target.value)}"
+          />
+        </field-set>
+      `, element);
+    };
+};
+const createNumberInput = (initConfig) => {
+    const element = document.createElement('field-set');
+    const id = uniqueId();
+    const config = Object.assign({ type: 'number' }, initConfig);
+    return (props) => {
+        Object.assign(config, initConfig, props);
+        console.log(config.value);
+        return render(tag `
+        <field-set class="--${config.type}">
+          <label for="${id}" >${config.label}</label>
+          <input
+            id="${id}"
+            type="${config.type}"
+            disabled="${config.disabled || false}"
+            placeholder="${config.placeholder || ''}"
+            min="${config.min || 0}"
+            max="${config.max || 100}"
+            step="${config.step || 1}"
+            value="${config.value}"
+            oninput="${event => config.onInput(Number(event.target.value))}"
           />
         </field-set>
       `, element);
@@ -581,7 +606,7 @@ const createSearchInput = (initConfig) => {
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set>
+        <field-set class="--search">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -607,7 +632,7 @@ const createCheckbox = (initConfig) => {
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set>
+        <field-set class="--checkbox">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -645,7 +670,7 @@ const createRadioInput = (initConfig) => {
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set>
+        <field-set class="--radio">
           <ul>
             ${map(options, (create) => create(config))}
           </ul>
@@ -678,7 +703,7 @@ const createStore = (protoObj) => {
     const subscriptions = {};
     const newStore = {
         subscriptions: {},
-        subscribe: function subscribe(func) {
+        subscribe: (func) => {
             const key = uniqueId();
             subscriptions[key] = func;
             return () => {
@@ -735,6 +760,7 @@ const state = createStore({
   search: '',
   checkbox: false,
   radio: false,
+  age: 0,
 });
 
 window.state = state;
@@ -772,6 +798,20 @@ const SampleRadio = createRadioInput({
   ]
 });
 
+const SampleNumber = createNumberInput({
+  label:'Age',
+  onInput:(value) => state.age = value,
+});
+
+const SampleNumberSlider = createNumberInput({
+  label:'Age',
+  type:'range',
+  max:100,
+  min:0,
+  step: 5,
+  onInput:(value) => state.age = value,
+});
+
 state.subscribe((state) => renderToBody(tag`
   <body>
     <h1>${state.value}</h1>
@@ -784,6 +824,9 @@ state.subscribe((state) => renderToBody(tag`
     ${SampleCheckbox({value:state.checkbox})}
     <span>${state.radio}</span>
     ${SampleRadio({value:state.radio})}
+    <span>${state.age}</span>
+    ${SampleNumber({value:state.age})}
+    ${SampleNumberSlider({value:state.age})}
   </body>
 `));
 

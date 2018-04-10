@@ -28,7 +28,7 @@ export const createTextInput: CreateModule<TextConfig> =
     return (props) => {
       Object.assign(config, initConfig, props);
       return render(tag`
-        <field-set>
+        <field-set class="--text">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -50,6 +50,7 @@ export interface NumberConfig {
   label: string;
   value: number;
   onInput: (value: number) => void;
+  type?: 'number' | 'range';
   placeholder?: string;
   min?: number;
   max?: number;
@@ -61,19 +62,19 @@ export const createNumberInput: CreateModule<NumberConfig>=
   (initConfig) => {
     const element = document.createElement('field-set');
     const id = uniqueId();
-    const config: NumberConfig = Object.assign({}, initConfig);
+    const config: NumberConfig = Object.assign({type:'number'}, initConfig);
     return (props) => {
       Object.assign(config, initConfig, props);
       return render(tag`
-        <field-set class="--number">
+        <field-set class="--${config.type}">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
-            type="number"
+            type="${config.type}"
             disabled="${config.disabled || false}"
             placeholder="${config.placeholder || ''}"
-            min="${config.min || Number.MIN_VALUE}"
-            max="${config.max || Number.MAX_VALUE}"
+            min="${config.min || 0}"
+            max="${config.max || 100}"
             step="${config.step || 1}"
             value="${config.value}"
             oninput="${event => config.onInput(Number((event.target as HTMLInputElement).value))}"
@@ -139,7 +140,7 @@ export const createSearchInput:CreateModule<SearchConfig> =
     return (props) => {
       Object.assign(config, initConfig, props);
       return render(tag`
-        <field-set>
+        <field-set class="--search">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -176,7 +177,7 @@ export const createCheckbox: CreateModule<CheckboxConfig> =
     return (props) => {
       Object.assign(config, initConfig, props);
       return render(tag`
-        <field-set>
+        <field-set class="--checkbox">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -232,7 +233,7 @@ export const createRadioInput: CreateModule<RadioConfig> =
     return (props) => {
       Object.assign(config, initConfig, props);
       return render(tag`
-        <field-set>
+        <field-set class="--radio">
           <ul>
             ${map(options, (create) => create(config))}
           </ul>
@@ -243,9 +244,6 @@ export const createRadioInput: CreateModule<RadioConfig> =
 
 
 /* Select Input */
-
-
-/* Slider Input */
 
 
 /* Button Input */

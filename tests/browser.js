@@ -6,6 +6,7 @@ import {
   createSearchInput,
   createCheckbox,
   createRadioInput,
+  createNumberInput,
 } from '../dist/framework/components/input';
 import { createStore } from '../dist/store';
 
@@ -19,6 +20,7 @@ const state = createStore({
   search: '',
   checkbox: false,
   radio: false,
+  age: 0,
 });
 
 window.state = state;
@@ -42,7 +44,7 @@ const SampleSearch = createSearchInput({
   onInput: (value) => {
     state.search = value;
   },
-})
+});
 const SampleCheckbox = createCheckbox({
   label:'add email',
   onInput:(value) => state.checkbox = value,
@@ -54,6 +56,20 @@ const SampleRadio = createRadioInput({
     'option B',
     'option C',
   ]
+});
+
+const SampleNumber = createNumberInput({
+  label:'Age',
+  onInput:(value) => state.age = value,
+});
+
+const SampleNumberSlider = createNumberInput({
+  label:'Age',
+  type:'range',
+  max:100,
+  min:0,
+  step: 5,
+  onInput:(value) => state.age = value,
 });
 
 state.subscribe((state) => renderToBody(tag`
@@ -68,6 +84,9 @@ state.subscribe((state) => renderToBody(tag`
     ${SampleCheckbox({value:state.checkbox})}
     <span>${state.radio}</span>
     ${SampleRadio({value:state.radio})}
+    <span>${state.age}</span>
+    ${SampleNumber({value:state.age})}
+    ${SampleNumberSlider({value:state.age})}
   </body>
 `));
 
