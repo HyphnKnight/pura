@@ -7,6 +7,7 @@ import {
   createCheckbox,
   createRadioInput,
   createNumberInput,
+  createSelectInput,
 } from '../dist/framework/components/input';
 import { createStore } from '../dist/store';
 
@@ -21,6 +22,7 @@ const state = createStore({
   checkbox: false,
   radio: false,
   age: 0,
+  select: '',
 });
 
 window.state = state;
@@ -72,6 +74,27 @@ const SampleNumberSlider = createNumberInput({
   onInput:(value) => state.age = value,
 });
 
+const SampleSelect = createSelectInput({
+  label: 'Select stuff',
+  options: [
+    'option A',
+    'option B',
+    'option C',
+    {
+      label:'Sub group',
+      options: [
+        'option D-A',
+        'option D-B',
+        'option D-C',
+        'option D-D',
+      ]
+    }
+  ],
+  onInput: (value) => {
+    state.select = value;
+  },
+});
+
 state.subscribe((state) => renderToBody(tag`
   <body>
     <h1>${state.value}</h1>
@@ -87,6 +110,8 @@ state.subscribe((state) => renderToBody(tag`
     <span>${state.age}</span>
     ${SampleNumber({value:state.age})}
     ${SampleNumberSlider({value:state.age})}
+    <span>${state.select}</span>
+    ${SampleSelect({value: state.select})}
   </body>
 `));
 

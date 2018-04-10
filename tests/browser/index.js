@@ -678,6 +678,45 @@ const createRadioInput = (initConfig) => {
       `, element);
     };
 };
+const createSelectItem = (value) => (option) => {
+    if (isString(option)) {
+        return tag `
+          <option
+            value="${option}"
+            selected="${value ? value === option : false}"
+          >${option}</option>`;
+    }
+    else {
+        return tag `
+          <optgroup
+            label="${option.label}"
+            disabled="${option.disabled || false}">
+            ${map(option.options, createSelectItem(value))}
+          </optgroup>
+        `;
+    }
+};
+const createSelectInput = (initConfig) => {
+    const element = document.createElement('field-set');
+    const id = uniqueId();
+    const config = Object.assign({}, initConfig);
+    return (props) => {
+        Object.assign(config, initConfig, props);
+        return render(tag `
+        <field-set class="--select">
+          <label for="${id}">${config.label}</label>
+          <select
+            id="${id}"
+            value="${config.value}"
+            disabled="${config.disabled || false}"
+            oninput="${event => config.onInput(event.target.value)}"
+            >
+            ${map(config.options, createSelectItem(config.value))}
+          </select>
+        </field-set>
+      `, element);
+    };
+};
 
 const setStore = (store) => (updateObj) => {
     const objKeys = Object.keys(updateObj);
@@ -760,7 +799,11 @@ const state = createStore({
   search: '',
   checkbox: false,
   radio: false,
+<<<<<<< HEAD
   age: 0,
+=======
+  select: '',
+>>>>>>> feature-select-input
 });
 
 window.state = state;
@@ -798,6 +841,7 @@ const SampleRadio = createRadioInput({
   ]
 });
 
+<<<<<<< HEAD
 const SampleNumber = createNumberInput({
   label:'Age',
   onInput:(value) => state.age = value,
@@ -810,6 +854,27 @@ const SampleNumberSlider = createNumberInput({
   min:0,
   step: 5,
   onInput:(value) => state.age = value,
+=======
+const SampleSelect = createSelectInput({
+  label: 'Select stuff',
+  options: [
+    'option A',
+    'option B',
+    'option C',
+    {
+      label:'Sub group',
+      options: [
+        'option D-A',
+        'option D-B',
+        'option D-C',
+        'option D-D',
+      ]
+    }
+  ],
+  onInput: (value) => {
+    state.select = value;
+  },
+>>>>>>> feature-select-input
 });
 
 state.subscribe((state) => renderToBody(tag`
@@ -824,9 +889,14 @@ state.subscribe((state) => renderToBody(tag`
     ${SampleCheckbox({value:state.checkbox})}
     <span>${state.radio}</span>
     ${SampleRadio({value:state.radio})}
+<<<<<<< HEAD
     <span>${state.age}</span>
     ${SampleNumber({value:state.age})}
     ${SampleNumberSlider({value:state.age})}
+=======
+    <span>${state.select}</span>
+    ${SampleSelect({value: state.select})}
+>>>>>>> feature-select-input
   </body>
 `));
 

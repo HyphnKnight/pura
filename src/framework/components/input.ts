@@ -1,7 +1,9 @@
 import { map } from '../../array';
 import { tag } from '../html';
+import { Tag } from '../types';
 import { render } from '../render';
 import { uniqueId } from '../../string';
+import { isString } from '../../is/type';
 
 export type CreateModule<Config> =
   (initConfig:Config) =>
@@ -244,7 +246,62 @@ export const createRadioInput: CreateModule<RadioConfig> =
 
 
 /* Select Input */
+export interface SelectOptionGroup {
+  label: string;
+  options: string[];
+  disabled?:boolean;
+}
 
+export interface SelectConfig {
+  label: string;
+  onInput: (value: string) => void;
+  value: string | false;
+  options: (string | SelectOptionGroup)[];
+  disabled?: boolean;
+}
+
+const createSelectItem =
+  (value:string| false) =>
+    (option: string | SelectOptionGroup): Tag => {
+      if (isString(option)) {
+        return tag`
+          <option
+            value="${option}"
+            selected="${value ? value === option : false}"
+          >${option}</option>`;
+      } else {
+        return tag`
+          <optgroup
+            label="${option.label}"
+            disabled="${option.disabled || false}">
+            ${map(option.options,createSelectItem(value))}
+          </optgroup>
+        `;
+      }
+    };
+
+export const createSelectInput: CreateModule<SelectConfig> =
+  (initConfig) => {
+    const element = document.createElement('field-set');
+    const id = uniqueId();
+    const config: SelectConfig = Object.assign({}, initConfig);
+    return (props) => {
+      Object.assign(config, initConfig, props);
+      return render(tag`
+        <field-set class="--select">
+          <label for="${id}">${config.label}</label>
+          <select
+            id="${id}"
+            value="${config.value}"
+            disabled="${config.disabled || false}"
+            oninput="${event => config.onInput((event.target as HTMLInputElement).value)}"
+            >
+            ${map(config.options,createSelectItem(config.value))}
+          </select>
+        </field-set>
+      `, element);
+    };
+  };
 
 /* Button Input */
 export interface ButtonConfig {
