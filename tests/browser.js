@@ -6,6 +6,7 @@ import {
   createSearchInput,
   createCheckbox,
   createRadioInput,
+  createSelectInput,
 } from '../dist/framework/components/input';
 import { createStore } from '../dist/store';
 
@@ -19,6 +20,7 @@ const state = createStore({
   search: '',
   checkbox: false,
   radio: false,
+  select: '',
 });
 
 window.state = state;
@@ -56,6 +58,27 @@ const SampleRadio = createRadioInput({
   ]
 });
 
+const SampleSelect = createSelectInput({
+  label: 'Select stuff',
+  options: [
+    'option A',
+    'option B',
+    'option C',
+    {
+      label:'Sub group',
+      options: [
+        'option D-A',
+        'option D-B',
+        'option D-C',
+        'option D-D',
+      ]
+    }
+  ],
+  onInput: (value) => {
+    state.select = value;
+  },
+});
+
 state.subscribe((state) => renderToBody(tag`
   <body>
     <h1>${state.value}</h1>
@@ -68,6 +91,8 @@ state.subscribe((state) => renderToBody(tag`
     ${SampleCheckbox({value:state.checkbox})}
     <span>${state.radio}</span>
     ${SampleRadio({value:state.radio})}
+    <span>${state.select}</span>
+    ${SampleSelect({value: state.select})}
   </body>
 `));
 
