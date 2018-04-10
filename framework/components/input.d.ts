@@ -13,6 +13,7 @@ export interface NumberConfig {
     label: string;
     value: number;
     onInput: (value: number) => void;
+    type?: 'number' | 'range';
     placeholder?: string;
     min?: number;
     max?: number;
@@ -54,6 +55,19 @@ export interface RadioConfig {
     disabled?: boolean;
 }
 export declare const createRadioInput: CreateModule<RadioConfig>;
+export interface SelectOptionGroup {
+    label: string;
+    options: string[];
+    disabled?: boolean;
+}
+export interface SelectConfig {
+    label: string;
+    onInput: (value: string) => void;
+    value: string | false;
+    options: (string | SelectOptionGroup)[];
+    disabled?: boolean;
+}
+export declare const createSelectInput: CreateModule<SelectConfig>;
 export interface ButtonConfig {
     label: string;
     onInput: () => void;

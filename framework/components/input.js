@@ -2,6 +2,7 @@ import { map } from '../../array';
 import { tag } from '../html';
 import { render } from '../render';
 import { uniqueId } from '../../string';
+import { isString } from '../../is/type';
 export const createTextInput = (initConfig) => {
     const element = document.createElement('field-set');
     const id = uniqueId();
@@ -9,7 +10,7 @@ export const createTextInput = (initConfig) => {
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set>
+        <field-set class="--text">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -27,19 +28,19 @@ export const createTextInput = (initConfig) => {
 export const createNumberInput = (initConfig) => {
     const element = document.createElement('field-set');
     const id = uniqueId();
-    const config = Object.assign({}, initConfig);
+    const config = Object.assign({ type: 'number' }, initConfig);
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set class="--number">
+        <field-set class="--${config.type}">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
-            type="number"
+            type="${config.type}"
             disabled="${config.disabled || false}"
             placeholder="${config.placeholder || ''}"
-            min="${config.min || Number.MIN_VALUE}"
-            max="${config.max || Number.MAX_VALUE}"
+            min="${config.min || 0}"
+            max="${config.max || 100}"
             step="${config.step || 1}"
             value="${config.value}"
             oninput="${event => config.onInput(Number(event.target.value))}"
@@ -77,7 +78,7 @@ export const createSearchInput = (initConfig) => {
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set>
+        <field-set class="--search">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -103,7 +104,7 @@ export const createCheckbox = (initConfig) => {
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set>
+        <field-set class="--checkbox">
           <label for="${id}" >${config.label}</label>
           <input
             id="${id}"
@@ -141,10 +142,49 @@ export const createRadioInput = (initConfig) => {
     return (props) => {
         Object.assign(config, initConfig, props);
         return render(tag `
-        <field-set>
+        <field-set class="--radio">
           <ul>
             ${map(options, (create) => create(config))}
           </ul>
+        </field-set>
+      `, element);
+    };
+};
+const createSelectItem = (value) => (option) => {
+    if (isString(option)) {
+        return tag `
+          <option
+            value="${option}"
+            selected="${value ? value === option : false}"
+          >${option}</option>`;
+    }
+    else {
+        return tag `
+          <optgroup
+            label="${option.label}"
+            disabled="${option.disabled || false}">
+            ${map(option.options, createSelectItem(value))}
+          </optgroup>
+        `;
+    }
+};
+export const createSelectInput = (initConfig) => {
+    const element = document.createElement('field-set');
+    const id = uniqueId();
+    const config = Object.assign({}, initConfig);
+    return (props) => {
+        Object.assign(config, initConfig, props);
+        return render(tag `
+        <field-set class="--select">
+          <label for="${id}">${config.label}</label>
+          <select
+            id="${id}"
+            value="${config.value}"
+            disabled="${config.disabled || false}"
+            oninput="${event => config.onInput(event.target.value)}"
+            >
+            ${map(config.options, createSelectItem(config.value))}
+          </select>
         </field-set>
       `, element);
     };
