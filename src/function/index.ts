@@ -35,9 +35,10 @@ export function debounce(func: Function, wait: number, leading: boolean = true, 
 
     let attemptedInvoke = 0;
     let delay: any;
+    let argsData: any[];
 
     return function debounceTrailingInside(...args: any[]) {
-
+      argsData = args;
       const time = Date.now();
 
       if (attemptedInvoke === 0) {
@@ -51,7 +52,7 @@ export function debounce(func: Function, wait: number, leading: boolean = true, 
       if (time - attemptedInvoke < maxWait) {
         delay = setTimeout(() => {
           attemptedInvoke = 0;
-          func(...args);
+          func(...argsData);
         }, wait);
       }
 
