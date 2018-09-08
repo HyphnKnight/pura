@@ -190,7 +190,7 @@ export const createSelectInput = (initConfig) => {
     };
 };
 export const createButton = (initConfig) => {
-    const element = document.createElement('field-set');
+    const element = document.createElement('button');
     const config = Object.assign({}, initConfig);
     return (props) => {
         Object.assign(config, initConfig, props);

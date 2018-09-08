@@ -16,7 +16,9 @@ export function debounce(func, wait, leading = true, maxWait = Number.MAX_VALUE)
     else {
         let attemptedInvoke = 0;
         let delay;
+        let argsData;
         return function debounceTrailingInside(...args) {
+            argsData = args;
             const time = Date.now();
             if (attemptedInvoke === 0) {
                 attemptedInvoke = time;
@@ -27,7 +29,7 @@ export function debounce(func, wait, leading = true, maxWait = Number.MAX_VALUE)
             if (time - attemptedInvoke < maxWait) {
                 delay = setTimeout(() => {
                     attemptedInvoke = 0;
-                    func(...args);
+                    func(...argsData);
                 }, wait);
             }
         };
