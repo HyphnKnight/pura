@@ -312,7 +312,7 @@ export interface ButtonConfig {
 
 export const createButton: CreateModule<ButtonConfig> =
   (initConfig) => {
-    const element = document.createElement('field-set');
+    const element = document.createElement('button');
     const config: ButtonConfig = Object.assign({}, initConfig);
     return (props) => {
       Object.assign(config, initConfig, props);
