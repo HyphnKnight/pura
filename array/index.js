@@ -44,14 +44,6 @@ export function find(array, func) {
     }
     return null;
 }
-export function findIndex(array, func) {
-    let i = -1;
-    while (++i < array.length) {
-        if (func(array[i], i, array))
-            return i;
-    }
-    return null;
-}
 export function times(length, func) {
     const result = [];
     let i = -1;

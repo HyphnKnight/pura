@@ -12,7 +12,6 @@ export declare const mapToMap: <src, key, value>(array: src[], func: iterator<sr
 export declare const filter: <T, R extends T>(array: T[], func?: iterator<T, boolean>) => R[];
 export declare const indexOf: <T>(array: T[], value: T) => number | null;
 export declare function find<T>(array: T[], func: iterator<T, boolean>): T | null;
-export declare function findIndex<T>(array: T[], func: iterator<T, boolean>): number | null;
 export declare function times<T>(length: number, func: timesIterator<T>): T[];
 export declare const difference: <T>(array: T[], targetArray: T[]) => T[];
 export declare const intersection: <T>(array: T[], targetArray: T[]) => T[];
