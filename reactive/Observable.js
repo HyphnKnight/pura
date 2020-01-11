@@ -2,6 +2,7 @@ import { isFunction } from '../is/type';
 export class Observable {
     constructor(subscribe) {
         this.isComplete = false;
+        this.subscriptions = new Set();
         subscribe({
             next: (value) => this.next(value),
             complete: () => this.complete(),
