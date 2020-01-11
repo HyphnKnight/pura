@@ -9,6 +9,7 @@
             true,
             "always-multiline"
         ],
+        "max-classes-per-file": false,
         "no-conditional-assignment": false,
         "no-console": false,
         "no-debugger": true,
@@ -22,7 +23,10 @@
             true,
             "both"
         ],
-        "interface-name": [true, "never-prefix"],
+        "interface-name": [
+            true,
+            "never-prefix"
+        ],
         "no-invalid-regexp": true,
         "ter-no-irregular-whitespace": [
             true
@@ -79,7 +83,7 @@
             2
         ],
         "max-line-length": [
-            false 
+            false
         ],
         "new-parens": true,
         "indent": true,
