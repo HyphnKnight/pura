@@ -9,7 +9,7 @@ export function map<T, R>(operationFunc: (value: T) => R): Operator<T, R> {
         next(operationFunc(value));
       },
       complete: () => {
-        complete();
+        if (complete) complete();
       },
     });
   });
@@ -24,7 +24,7 @@ export function filter<T>(predicate: (value: T) => boolean) {
         }
       },
       complete: () => {
-        complete();
+        if (complete) complete();
       },
     });
   });

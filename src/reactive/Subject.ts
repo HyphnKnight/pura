@@ -22,7 +22,9 @@ export class Subject<T> {
   }
 
   public complete() {
-    this.subscriber.complete();
+    if (this.subscriber.complete) {
+      this.subscriber.complete();
+    }
   }
 
   public pipe<R>(operator: Operator<T, R>): Observable<R> {
