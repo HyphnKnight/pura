@@ -12,7 +12,7 @@ export interface Subscriber<T> {
 
 export class Observable<T> {
   private isComplete = false;
-  private readonly subscriptions: Set<Subscriber<T> | NextFunction<T>>;
+  private readonly subscriptions = new Set<Subscriber<T> | NextFunction<T>>();
 
   constructor(subscribe: (subscriber: Subscriber<T>) => void) {
     subscribe({
