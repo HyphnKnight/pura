@@ -29,7 +29,7 @@ export const get =
         : null;
     };
 
-function roundHex(hex: Hex): Hex {
+export function roundHex(hex: Hex): Hex {
   const rHex: Hex = [
     Math.round(hex[0]),
     Math.round(hex[1]),
