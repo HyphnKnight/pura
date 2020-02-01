@@ -1,4 +1,4 @@
-import { remove, uniqueBy } from '../array';
+import { remove } from '../array';
 import mergeSort from '../array/mergeSort';
 import { uniqueId } from '../string';
 
