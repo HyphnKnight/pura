@@ -20,7 +20,7 @@ export const getReachable =
         const neighbors = getNeighbors(current);
         frontier.push(
           ...filter(neighbors, (neighbor) => {
-            if (costSoFar.get(neighbor)) return false;
+            if (costSoFar.has(neighbor)) return false;
             const newCost = currentCost + resist(current, neighbor);
             costSoFar.set(neighbor, newCost);
             return newCost <= maxResist;
