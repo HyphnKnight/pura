@@ -18,11 +18,11 @@
   "author": "Rafe Lepre",
   "license": "MIT",
   "devDependencies": {
-    "rollup": "^0.56.1",
-    "rollup-plugin-node-resolve": "^3.0.3",
+    "rollup": "^0.56.5",
+    "rollup-plugin-node-resolve": "^3.4.0",
     "ts-node": "^4.1.0",
-    "tslint": "^5.9.1",
+    "tslint": "^5.20.1",
     "tslint-eslint-rules": "^4.1.1",
-    "typescript": "^2.7.2"
+    "typescript": "^2.9.2"
   }
 }
