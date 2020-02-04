@@ -2,24 +2,24 @@ import { remove } from '../array';
 import { getReachable, pathTo } from '../path';
 
 
-export interface GraphData<Value> {
-  nodes: Value[];
+export interface GraphData<Node> {
+  nodes: Node[];
   edges: Array<[number, number]>;
 }
 
-export type Edge<Value> = [Value, Value];
+export type Edge<Node> = [Node, Node];
 
-export class ReadonlyGraph<Value> {
-  protected readonly nodeList: Value[];
-  protected readonly edgeList: Array<Edge<Value>>;
-  protected readonly nodeToEdgeMap: Map<Value, Array<Edge<Value>>>;
+export class ReadonlyGraph<Node> {
+  protected readonly nodeList: Node[];
+  protected readonly edgeList: Array<Edge<Node>>;
+  protected readonly nodeToEdgeMap: Map<Node, Array<Edge<Node>>>;
 
-  constructor({ nodes, edges: edgeLookups }: GraphData<Value>) {
+  constructor({ nodes, edges: edgeLookups }: GraphData<Node>) {
     this.nodeList = [...nodes];
     this.edgeList = [...edgeLookups.map(([sourceIndex, targetIndex]) => ([
       this.nodeList[sourceIndex]!,
       this.nodeList[targetIndex]!,
-    ] as Edge<Value>))];
+    ] as Edge<Node>))];
     this.nodeToEdgeMap = new Map();
     for (const edge of this.edgeList) {
       const [start] = edge;
@@ -31,27 +31,27 @@ export class ReadonlyGraph<Value> {
   }
 
   get nodes() {
-    return this.nodeList as ReadonlyArray<Value>;
+    return this.nodeList as ReadonlyArray<Node>;
   }
 
   get edges() {
-    return this.edgeList as ReadonlyArray<Edge<Value>>;
+    return this.edgeList as ReadonlyArray<Edge<Node>>;
   }
 
-  public getEdges(root: Value): Array<Edge<Value>> {
+  public getEdges(root: Node): Array<Edge<Node>> {
     return this.nodeToEdgeMap.get(root);
   }
 
-  public getNeighbors(root: Value): Value[] {
+  public getNeighbors(root: Node): Node[] {
     return this.getEdges(root).map(([, target]) => target);
   }
 
   public createPathTo(
-    resist: (current: Value, neighbor: Value) => number,
-    heuristic: (goal: Value, neighbor: Value) => number,
+    resist: (current: Node, neighbor: Node) => number,
+    heuristic: (goal: Node, neighbor: Node) => number,
     maxResist = Infinity,
   ) {
-    return pathTo<Value>(
+    return pathTo<Node>(
       (value) => this.getNeighbors(value),
       resist,
       heuristic,
@@ -59,8 +59,8 @@ export class ReadonlyGraph<Value> {
     );
   }
 
-  public createGetReachable(resist: (current: Value, neighbor: Value) => number) {
-    return getReachable<Value>(
+  public createGetReachable(resist: (current: Node, neighbor: Node) => number) {
+    return getReachable<Node>(
       (value) => this.getNeighbors(value),
       resist,
     );
@@ -69,7 +69,7 @@ export class ReadonlyGraph<Value> {
   // tslint:disable-next-line: member-ordering
   public readonly getWithin = this.createGetReachable(() => 1);
 
-  public toJSON(): GraphData<Value> {
+  public toJSON(): GraphData<Node> {
     return {
       nodes: this.nodeList,
       edges: this.edges.map(([source, target]) => ([
@@ -80,14 +80,14 @@ export class ReadonlyGraph<Value> {
   }
 }
 
-export class Graph<Value> extends ReadonlyGraph<Value> {
-  public addNode(node: Value): Value {
+export class Graph<Node> extends ReadonlyGraph<Node> {
+  public addNode(node: Node): Node {
     this.nodeList.push(node);
     return node;
   }
 
-  public addEdge(source: Value, target: Value): Edge<Value> {
-    const edge: Edge<Value> = [source, target];
+  public addEdge(source: Node, target: Node): Edge<Node> {
+    const edge: Edge<Node> = [source, target];
     this.edgeList.push(edge);
     if (!this.nodeToEdgeMap.has(source)) {
       this.nodeToEdgeMap.set(source, []);
@@ -96,7 +96,7 @@ export class Graph<Value> extends ReadonlyGraph<Value> {
     return edge;
   }
 
-  public removeNode(node: Value): void {
+  public removeNode(node: Node): void {
     remove(this.nodeList, node);
 
     let i = 0;
@@ -110,7 +110,7 @@ export class Graph<Value> extends ReadonlyGraph<Value> {
     }
   }
 
-  public removeEdge(edge: Edge<Value>): void {
+  public removeEdge(edge: Edge<Node>): void {
     let i = 0;
     while (i < this.edgeList.length) {
       const edgeToMatch = this.edgeList[i];

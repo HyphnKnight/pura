@@ -3,10 +3,12 @@ import { ReadonlyGraph } from '../graph';
 import { distanceFromTo, generateGrid, getNeighborsGrid, Hex, roundHex } from './index';
 
 
-export class HexGraph<Value> extends ReadonlyGraph<Value> {
-  protected readonly hexMap: Map<Value, Hex>;
+export class HexGraph<Node> extends ReadonlyGraph<Node> {
+  protected readonly hexToNode: Map<Hex, Node>;
+  protected readonly valueToHex: Map<Node, Hex>;
+  protected readonly hexMap: Map<string, Hex>;
 
-  constructor(radius: number, getValue: (hex: Hex) => Value) {
+  constructor(radius: number, getNode: (hex: Hex) => Node) {
     const grid = generateGrid(radius);
     const getNeighbors = getNeighborsGrid(grid);
 
@@ -26,29 +28,27 @@ export class HexGraph<Value> extends ReadonlyGraph<Value> {
       }
     }
 
-    const values = hexes.map(getValue);
+    const nodes = hexes.map(getNode);
 
-    super({
-      edges, values,
-      getUniqueId: (value: Value) =>
-        String(hexes[values.indexOf(value)]),
-    });
+    super({ edges, nodes });
 
-    this.hexMap = new Map();
+    this.hexToNode = new Map();
+    this.valueToHex = new Map();
 
-    values.forEach((value, i) => {
-      this.hexMap.set(value, hexes[i]);
+    nodes.forEach((node, i) => {
+      this.hexToNode.set(hexes[i], node);
+      this.valueToHex.set(node, hexes[i]);
     });
   }
 
-  public get(q: number, r: number): Value {
-    const node = this.hexMap[`${q},${r},${-q - r}`];
-    if (!node) return null;
-    return node.value;
+  public get(q: number, r: number): Node {
+    const hexRef = this.hexMap.get(`${q},${r},${-q - r}`);
+    return this.hexToNode.get(hexRef);
   }
 
-  public getByHex(hex: Hex): Value {
-    return this.hexMap[String(hex)].value;
+  public getByHex(hex: Hex): Node {
+    const hexRef = this.hexMap.get(String(hex));
+    return this.hexToNode.get(hexRef);
   }
 
   public getByVector2d(x: number, y: number) {
@@ -61,14 +61,14 @@ export class HexGraph<Value> extends ReadonlyGraph<Value> {
     return this.getByNearestHex(hex);
   }
 
-  public getDistanceBetween(from: Value, target: Value): number {
+  public getDistanceBetween(from: Node, target: Node): number {
     return distanceFromTo(
-      this.hexMap.get(from),
-      this.hexMap.get(target),
+      this.valueToHex.get(from),
+      this.valueToHex.get(target),
     );
   }
 
-  protected getByNearestHex(hex: Hex): Value {
+  protected getByNearestHex(hex: Hex): Node {
     return this.getByHex(roundHex(hex));
   }
 }
