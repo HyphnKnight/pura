@@ -1,10 +1,4 @@
-export declare type Diff<T extends string, U extends string> = ({
-    [P in T]: P;
-} & {
-    [P in U]: never;
-} & {
-    [x: string]: never;
-})[T];
-export declare type Omit<T, K extends keyof T> = {
-    [P in Diff<keyof T, K>]: T[P];
-};
+export declare type KeyType = string | number | symbol;
+export declare type Matrix<Value = number> = Value[][];
+export declare type Matrix4<Value = number> = [[Value, Value, Value, Value], [Value, Value, Value, Value], [Value, Value, Value, Value], [Value, Value, Value, Value]];
+export declare type Matrix3<Value = number> = [[Value, Value, Value], [Value, Value, Value], [Value, Value, Value]];

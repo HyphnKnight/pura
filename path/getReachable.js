@@ -14,7 +14,7 @@ export const getReachable = (getNeighbors, resist) => (start, maxResist = Infini
         result.push(current);
         const neighbors = getNeighbors(current);
         frontier.push(...filter(neighbors, (neighbor) => {
-            if (costSoFar.get(neighbor))
+            if (costSoFar.has(neighbor))
                 return false;
             const newCost = currentCost + resist(current, neighbor);
             costSoFar.set(neighbor, newCost);

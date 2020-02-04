@@ -1,5 +1,6 @@
 export declare type Hex = [number, number, number];
 export declare const get: (grid: [number, number, number][][]) => ([q, r]: [number, number] | [number, number, number]) => [number, number, number] | null;
+export declare function roundHex(hex: Hex): Hex;
 export declare const hexToVector2d: (hex: [number, number, number]) => [number, number];
 export declare const vector2dToHex: (vec: [number, number]) => [number, number, number];
 export declare const getFromVector2d: (grid: [number, number, number][][]) => (vec: [number, number]) => [number, number, number] | null;

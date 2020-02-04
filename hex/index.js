@@ -16,7 +16,7 @@ export const get = (grid) => ([q, r]) => {
         ? grid[y][x]
         : null;
 };
-function roundHex(hex) {
+export function roundHex(hex) {
     const rHex = [
         Math.round(hex[0]),
         Math.round(hex[1]),
