@@ -26,7 +26,7 @@ export class ReadonlyGraph<Node> {
       if (this.nodeToEdgeMap.has(start)) {
         this.nodeToEdgeMap.set(start, []);
       }
-      this.nodeToEdgeMap.get(start).push(edge);
+      this.nodeToEdgeMap.get(start)!.push(edge);
     }
   }
 
@@ -39,7 +39,7 @@ export class ReadonlyGraph<Node> {
   }
 
   public getEdges(root: Node): Array<Edge<Node>> {
-    return this.nodeToEdgeMap.get(root);
+    return this.nodeToEdgeMap.get(root)!;
   }
 
   public getNeighbors(root: Node): Node[] {
@@ -73,9 +73,9 @@ export class ReadonlyGraph<Node> {
     return {
       nodes: this.nodeList,
       edges: this.edges.map(([source, target]) => ([
-        this.nodeList.indexOf(source),
-        this.nodeList.indexOf(target),
-      ])),
+        this.nodeList.indexOf(source)!,
+        this.nodeList.indexOf(target)!,
+      ] as [number, number])),
     };
   }
 }
@@ -92,7 +92,7 @@ export class Graph<Node> extends ReadonlyGraph<Node> {
     if (!this.nodeToEdgeMap.has(source)) {
       this.nodeToEdgeMap.set(source, []);
     }
-    this.nodeToEdgeMap.get(source).push(edge);
+    this.nodeToEdgeMap.get(source)!.push(edge);
     return edge;
   }
 

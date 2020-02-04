@@ -24,7 +24,7 @@ export class HexGraph<Node> extends ReadonlyGraph<Node> {
         edges.push([
           hexIndex,
           hexes.indexOf(neighborHex),
-        ]);
+        ] as [number, number]);
       }
     }
 
@@ -42,13 +42,13 @@ export class HexGraph<Node> extends ReadonlyGraph<Node> {
   }
 
   public get(q: number, r: number): Node {
-    const hexRef = this.hexMap.get(`${q},${r},${-q - r}`);
-    return this.hexToNode.get(hexRef);
+    const hexRef = this.hexMap.get(`${q},${r},${-q - r}`)!;
+    return this.hexToNode.get(hexRef)!;
   }
 
   public getByHex(hex: Hex): Node {
-    const hexRef = this.hexMap.get(String(hex));
-    return this.hexToNode.get(hexRef);
+    const hexRef = this.hexMap.get(String(hex))!;
+    return this.hexToNode.get(hexRef)!;
   }
 
   public getByVector2d(x: number, y: number) {
@@ -63,8 +63,8 @@ export class HexGraph<Node> extends ReadonlyGraph<Node> {
 
   public getDistanceBetween(from: Node, target: Node): number {
     return distanceFromTo(
-      this.valueToHex.get(from),
-      this.valueToHex.get(target),
+      this.valueToHex.get(from)!,
+      this.valueToHex.get(target)!,
     );
   }
 
