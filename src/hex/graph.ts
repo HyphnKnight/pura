@@ -15,12 +15,10 @@ export class HexGraph<Node> extends ReadonlyGraph<Node> {
     const hexes = flatten(grid);
     const edges = [];
 
-    for (let h = 0; h < hexes.length; ++h) {
-      const hex = hexes[h];
+    for (const hex of hexes) {
       const hexIndex = hexes.indexOf(hex);
       const neighbors = getNeighbors(hex);
-      for (let n = 0; n < neighbors.length; ++n) {
-        const neighborHex = neighbors[n];
+      for (const neighborHex of neighbors) {
         edges.push([
           hexIndex,
           hexes.indexOf(neighborHex),
