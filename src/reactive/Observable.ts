@@ -11,12 +11,29 @@ export interface Subscriber<T> {
 }
 
 export class Observable<T> {
+
+
+  public static fromPromise<T>(promise: Promise<T>) {
+    return new Observable((subscriber) => {
+      promise
+        .then((promiseResult) => {
+          subscriber.next(promiseResult);
+        })
+        .catch((promiseError) => {
+          subscriber.error(promiseError);
+        })
+        .complete(() => {
+          subscriber.complete();
+        });
+    });
+  }
   private isComplete = false;
   private readonly subscriptions = new Set<Subscriber<T> | NextFunction<T>>();
 
   constructor(subscribe: (subscriber: Subscriber<T>) => void) {
     subscribe({
       next: (value) => this.next(value),
+      error: (error) => this.error(error)
       complete: () => this.complete(),
     } as Subscriber<T>);
   }
@@ -42,6 +59,15 @@ export class Observable<T> {
         subscription.next(value);
       }
     });
+  }
+
+  private error(error: Error) {
+    this.subscriptions.forEach((subscription) => {
+      if (!isFunction(subscription) && subscription.error) {
+        subscription.error(error);
+      }
+    });
+    this.complete();
   }
 
   private complete() {
