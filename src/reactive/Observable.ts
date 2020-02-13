@@ -10,9 +10,13 @@ export interface Subscriber<T> {
   error?: (error: Error) => void;
 }
 
+export interface ObsSubscriber<T> {
+  next: NextFunction<T>;
+  complete: () => void;
+  error: (error: Error) => void;
+}
+
 export class Observable<T> {
-
-
   public static fromPromise<T>(promise: Promise<T>) {
     return new Observable((subscriber) => {
       promise
@@ -22,7 +26,7 @@ export class Observable<T> {
         .catch((promiseError) => {
           subscriber.error(promiseError);
         })
-        .complete(() => {
+        .then(() => {
           subscriber.complete();
         });
     });
@@ -30,12 +34,12 @@ export class Observable<T> {
   private isComplete = false;
   private readonly subscriptions = new Set<Subscriber<T> | NextFunction<T>>();
 
-  constructor(subscribe: (subscriber: Subscriber<T>) => void) {
+  constructor(subscribe: (subscriber: ObsSubscriber<T>) => void) {
     subscribe({
       next: (value) => this.next(value),
-      error: (error) => this.error(error)
+      error: (error) => this.error(error),
       complete: () => this.complete(),
-    } as Subscriber<T>);
+    } as ObsSubscriber<T>);
   }
 
   public subscribe(subscription: Subscriber<T> | NextFunction<T>) {

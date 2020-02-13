@@ -23,7 +23,7 @@ export class ReadonlyGraph<Node> {
     this.nodeToEdgeMap = new Map();
     for (const edge of this.edgeList) {
       const [start] = edge;
-      if (this.nodeToEdgeMap.has(start)) {
+      if (!this.nodeToEdgeMap.has(start)) {
         this.nodeToEdgeMap.set(start, []);
       }
       this.nodeToEdgeMap.get(start)!.push(edge);

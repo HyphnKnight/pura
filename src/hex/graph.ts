@@ -7,6 +7,7 @@ export class HexGraph<Node> extends ReadonlyGraph<Node> {
   protected readonly hexToNode: Map<Hex, Node>;
   protected readonly valueToHex: Map<Node, Hex>;
   protected readonly hexMap: Map<string, Hex>;
+  protected readonly hexGrid: Hex[][];
 
   constructor(radius: number, getNode: (hex: Hex) => Node) {
     const grid = generateGrid(radius);
@@ -32,6 +33,7 @@ export class HexGraph<Node> extends ReadonlyGraph<Node> {
 
     this.hexToNode = new Map();
     this.valueToHex = new Map();
+    this.hexGrid = grid;
 
     nodes.forEach((node, i) => {
       this.hexToNode.set(hexes[i], node);

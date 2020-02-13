@@ -46,7 +46,6 @@
         "no-construct": true,
         "no-duplicate-variable": true,
         "no-duplicate-imports": true,
-        "no-unused-variable": true,
         "no-unused-expression": true,
         "no-shadowed-variable": true,
         "handle-callback-err": true,
