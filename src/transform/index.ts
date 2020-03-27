@@ -1,19 +1,12 @@
 import { Geometry } from '../geometry';
 import { Vector2d } from '../vector';
 
+
 export class Transform {
-
-  public position: Vector2d;
-  public savedPositions: Vector2d[];
-  public rotation: number;
-  public savedRotations: number[];
-
-  constructor() {
-    this.position = [0, 0];
-    this.rotation = 0;
-    this.savedPositions = [];
-    this.savedRotations = [];
-  }
+  public position: Vector2d = [0,0];
+  public savedPositions: Vector2d[] = [];
+  public rotation: number = 0;
+  public savedRotations: number[] = [];
 
   public apply = (geometry: Geometry): Geometry =>
     Object.assign(
@@ -22,7 +15,7 @@ export class Transform {
         position: [...this.position],
         rotation: this.rotation,
       },
-    )
+    );
 
   public save() {
     this.savedPositions.push([this.position[0], this.position[1]]);
