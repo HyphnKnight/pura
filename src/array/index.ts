@@ -5,33 +5,21 @@ export type reduceIterator<T, R> = (base: R, value: T, index: number, array: T[]
 export type timesIterator<T> = (index: number, length: number) => T;
 
 export function forEach<T>(array: T[], func: iterator<T, void>): T[] {
-  let i = -1;
-  while (++i < array.length) func(array[i], i, array);
+  array.forEach(func);
   return array;
 }
 
 export function reduce<T, R>(array: T[], func: reduceIterator<T, R>, base: R): R {
-  let i = -1;
-  while (++i < array.length) base = func(base, array[i], i, array);
-  return base;
+  return array.reduce(func,base);
 }
 
 export function reduceRight<T, R>(array: T[], func: reduceIterator<T, R>, base: R): R {
-  let i = array.length;
-  while (--i >= 0) base = func(base, array[i], i, array);
-  return base;
+  return array.reduceRight(func,base);
 }
 
 export const map =
   <T, R>(array: T[], func: iterator<T, R>): R[] =>
-    reduce<T, R[]>(
-      array,
-      (result, value, index, self) => {
-        result.push(func(value, index, self));
-        return result;
-      },
-      [],
-    );
+    [...array].map(func);
 
 export const mapToObject =
   <T>(array: T[], func: iterator<T, string>): { [name: string]: T } =>
@@ -60,19 +48,13 @@ export const filter =
 
 export const indexOf =
   <T>(array: T[], value: T): number | null => {
-    let i = -1;
-    while (++i < array.length) {
-      if (array[i] === value) return i;
-    }
-    return null;
+    const index =array.indexOf(value);
+    return index >= -1 ? index : null;
   };
 
 export function find<T>(array: T[], func: iterator<T, boolean>): T | null {
-  let i = -1;
-  while (++i < array.length) {
-    if (func(array[i], i, array)) return array[i];
-  }
-  return null;
+  const result = array.find(func);
+  return result ?? null;
 }
 
 export function times<T>(length: number, func: timesIterator<T>): T[] {
