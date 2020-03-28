@@ -212,4 +212,3 @@ export const any =
 export const all =
   <T>(array: T[], func: iterator<T, boolean>) =>
     !find(array, (value, i, self) => !func(value, i, self));
-
