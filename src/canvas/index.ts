@@ -10,7 +10,7 @@ import {
 } from '../vector/list';
 
 export let canvas: HTMLCanvasElement = document.createElement('canvas');
-export let ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+export let ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
 
 export const setCanvas =
   (newCanvas: HTMLCanvasElement, canvasAttributes?: CanvasRenderingContext2DSettings) => {
@@ -229,7 +229,7 @@ export const fillText =
 
     ctx.save();
 
-    ctx.fillStyle = fontOptions.style ?? fontOptions.style;
+    ctx.fillStyle = fontOptions.style ?? ctx.fillStyle;
     ctx.font = fontOptions.font ?? ctx.font;
     ctx.textAlign = fontOptions.textAlign ?? ctx.textAlign;
     ctx.textBaseline = fontOptions.textBaseline ?? ctx.textBaseline;

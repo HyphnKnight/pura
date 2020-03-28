@@ -84,7 +84,7 @@ export const get =
   };
 
 export const set =
-  <type extends { [id: string]: any }, value>(obj: type, path: string, value: value): type => {
+  <type extends {}, key extends keyof type>(obj: type, path: key, value: type[key]): type => {
     obj[path] = value;
     return obj;
   };
