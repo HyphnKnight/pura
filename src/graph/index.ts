@@ -4,15 +4,15 @@ import { getReachable, pathTo } from '../path';
 
 export interface GraphData<Node> {
   nodes: Node[];
-  edges: Array<[number, number]>;
+  edges: [number, number][];
 }
 
 export type Edge<Node> = [Node, Node];
 
 export class ReadonlyGraph<Node> {
   protected readonly nodeList: Node[];
-  protected readonly edgeList: Array<Edge<Node>>;
-  protected readonly nodeToEdgeMap: Map<Node, Array<Edge<Node>>>;
+  protected readonly edgeList: Edge<Node>[];
+  protected readonly nodeToEdgeMap: Map<Node, Edge<Node>[]>;
 
   constructor({ nodes, edges: edgeLookups }: GraphData<Node>) {
     this.nodeList = [...nodes];
@@ -38,7 +38,7 @@ export class ReadonlyGraph<Node> {
     return this.edgeList as ReadonlyArray<Edge<Node>>;
   }
 
-  public getEdges(root: Node): Array<Edge<Node>> {
+  public getEdges(root: Node): Edge<Node>[] {
     return this.nodeToEdgeMap.get(root)!;
   }
 

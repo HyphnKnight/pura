@@ -23,7 +23,7 @@ export function* walkTo<data>(pathingData: WalkToData<data>): IterableIterator<d
 
   let rootNode: Node<data> = createNode<data>(getUniqueId(start), start, 0, priorityFunc(start, destination));
   const nodes: { [id: string]: Node<data> } = { [rootNode.id]: rootNode };
-  let newNeighbors: Array<Node<data>> = [rootNode];
+  let newNeighbors: Node<data>[] = [rootNode];
 
   while (newNeighbors[0].data !== destination) {
     if (rootNode.priority > maxResist) { return null; }

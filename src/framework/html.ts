@@ -86,7 +86,7 @@ const parseParameter =
   };
 
 export const tag =
-  (str: TemplateStringsArray, ...parameters: Array<ValidInput | ValidInput[]>) => {
+  (str: TemplateStringsArray, ...parameters: (ValidInput | ValidInput[])[]) => {
     let html = '';
     let i = -1;
     while (++i < str.length) {

@@ -9,7 +9,7 @@ export const pathTo =
     maxResist: number = Infinity
   ) =>
     (start: data, goal: data): data[] | null => {
-      let frontier: Array<[data, number]> = [[start, heuristic(goal, start)]];
+      let frontier: [data, number][] = [[start, heuristic(goal, start)]];
       const cameFrom = new Map();
       const costSoFar = new Map();
       cameFrom.set(start, null);

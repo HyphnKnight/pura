@@ -127,7 +127,7 @@ export const countBy =
   };
 
 export const invoke =
-  (array: Array<() => void>): Array<() => void> =>
+  (array: (() => void)[]): (() => void)[] =>
     forEach(array, (func: (() => void)) => func());
 
 export const concat =

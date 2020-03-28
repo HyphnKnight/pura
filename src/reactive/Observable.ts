@@ -85,7 +85,7 @@ export class Observable<T> {
   }
 }
 
-export function merge<T>(...observables: Array<Observable<T>>): Observable<T> {
+export function merge<T>(...observables: Observable<T>[]): Observable<T> {
   return new Observable((subscriber) => {
     observables.forEach((observable) => {
       observable.subscribe(subscriber);

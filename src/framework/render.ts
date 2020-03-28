@@ -87,11 +87,11 @@ export const render =
       throw new Error(`Render attempting to render tag with id #${tag.attributes.id} to an element with the id of #${target.id}`);
     }
     applyTagPropsToElement(tag, target);
-    let activeTags: Array<[HTMLElement, Tag['children']]> = [
+    let activeTags: [HTMLElement, Tag['children']][] = [
       [target, tag.children],
     ];
     while (activeTags.length) {
-      const nextTags: Array<[HTMLElement, Tag['children']]> = [];
+      const nextTags: [HTMLElement, Tag['children']][] = [];
       let atIndex = -1;
       while (++atIndex < activeTags.length) {
         const [parent, childTags] = activeTags[atIndex];

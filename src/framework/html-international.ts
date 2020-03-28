@@ -54,7 +54,7 @@ const parseTag =
 
     return {
       name, attributes,
-      children: [] as Array<Tag | string>,
+      children: [] as (Tag | string)[],
     };
   };
 
@@ -192,7 +192,7 @@ const parseParameter =
   };
 
 export const tag =
-  (str: TemplateStringsArray, ...parameters: Array<ValidInput | ValidInput[]>) => {
+  (str: TemplateStringsArray, ...parameters: (ValidInput | ValidInput[])[]) => {
     const events = new Map<string, EventCallback>();
     const tags = new Map<string, Tag | HTMLTag>();
     let htmlText = '';

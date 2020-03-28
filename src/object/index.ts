@@ -61,14 +61,14 @@ export const mapToArray =
     map(Object.keys(obj), (key) => iterator(obj[key], key as string, obj));
 
 export const pairs =
-  <Value>(obj: ObjLit<Value>): Array<[string, Value]> =>
+  <Value>(obj: ObjLit<Value>): [string, Value][] =>
     map<string, [string, Value]>(
       Object.keys(obj) as string[],
       (key) => ([key, obj[key]])
     );
 
 export const merge =
-  <type>(obj: type, ...objs: Array<Partial<type>>): type =>
+  <type>(obj: type, ...objs: Partial<type>[]): type =>
     Object.assign(Object.create(null), obj, ...objs);
 
 export const get =

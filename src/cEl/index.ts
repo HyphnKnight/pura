@@ -35,7 +35,7 @@ import {
 
 export interface CEl<geometryType extends (Geometry | null)> {
   geometry?: Geometry;
-  children?: Array<CEl<any>>;
+  children?: CEl<any>[];
   render?: (el: CEl<geometryType>) => void;
   interact?: {
     onMouseDown?: (el: CEl<geometryType>, position: Vector2d) => void,

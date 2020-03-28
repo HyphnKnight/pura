@@ -181,7 +181,7 @@ export const getWithin =
 export const getWithinGrid =
   (grid: Hex[][]) =>
     (hex: Hex, radius: number): Hex[] => {
-      const hexes: Array<Hex | null> = [];
+      const hexes: (Hex | null)[] = [];
       for (let dx = -radius; dx <= radius; ++dx) {
         const limit = Math.min(radius, -dx + radius);
         for (let dy = Math.max(-radius, -dx - radius); dy <= limit; ++dy) {

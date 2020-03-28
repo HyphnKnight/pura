@@ -15,7 +15,7 @@ export class Transform {
         position: [...this.position],
         rotation: this.rotation,
       },
-    );
+    )
 
   public save() {
     this.savedPositions.push([this.position[0], this.position[1]]);

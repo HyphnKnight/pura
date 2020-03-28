@@ -9,7 +9,7 @@ export interface Tag {
   attributes: {
     [prop: string]: string | number | boolean | EventCallback;
   };
-  children: Array<Tag | HTMLTag | string>;
+  children: (Tag | HTMLTag | string)[];
 }
 
 export interface HTMLTag {
