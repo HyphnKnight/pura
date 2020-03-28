@@ -10,12 +10,12 @@ import {
 } from '../vector/list';
 
 export let canvas: HTMLCanvasElement = document.createElement('canvas');
-export let ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
+export let ctx: CanvasRenderingContext2D = canvas.getContext('2d');
 
 export const setCanvas =
-  (newCanvas: HTMLCanvasElement, canvasAttributes?: Partial<Canvas2DContextAttributes>) => {
+  (newCanvas: HTMLCanvasElement, canvasAttributes?: CanvasRenderingContext2DSettings) => {
     canvas = newCanvas;
-    const newContext = newCanvas.getContext('2d', canvasAttributes) as CanvasRenderingContext2D;
+    const newContext = newCanvas.getContext('2d', canvasAttributes);
     if (newContext) ctx = newContext;
   };
 
@@ -148,12 +148,12 @@ export const drawArc =
   };
 
 const fill =
-  (draw: Function) =>
-    (style: string, ...args: any[]) => {
+  <DrawFunction extends (...args: any) => any>(draw: DrawFunction) =>
+    (style: string, ...args: Parameters<DrawFunction>) => {
       ctx.save();
       ctx.beginPath();
       ctx.fillStyle = style;
-      draw(...args);
+      draw(...args as any);
       ctx.fill();
       ctx.restore();
     };
@@ -164,67 +164,47 @@ export interface StrokeOptions {
 }
 
 const stroke =
-  (draw: Function) =>
-    (options: StrokeOptions, ...args: any[]) => {
+  <DrawFunction extends (...args: any) => any>(draw: DrawFunction) =>
+    (options: StrokeOptions, ...args: Parameters<DrawFunction>) => {
       ctx.save();
       ctx.beginPath();
-      ctx.strokeStyle = options.style || '';
-      ctx.lineWidth = options.thickness || 1;
-      draw(...args);
+      ctx.strokeStyle = options.style ?? '';
+      ctx.lineWidth = options.thickness ?? 1;
+      draw(...args as any);
       ctx.stroke();
       ctx.restore();
     };
 
-export const fillPolygon = fill(drawPolygon) as
-  (style: string, position: Vector2d, points: VectorList, angle: number) =>
-    void;
-export const fillOval = fill(drawOval) as
-  (style: string, position: Vector2d, points: VectorList, angle: number) =>
-    void;
-export const fillRectangle = fill(drawRectangle) as
-  (style: string, position: Vector2d, width: number, height: number, angle: number) =>
-    void;
-export const fillLine = fill(drawLine) as
-  (style: string, points: VectorList, angle: number) =>
-    void;
-export const fillArc = fill(drawArc) as
-  (style: string, vec: Vector2d, radius: number, angle?: number, startAngle?: number, endAngle?: number, counterClockwise?: boolean) =>
-    void;
+export const fillPolygon = fill(drawPolygon);
+export const fillOval = fill(drawOval);
+export const fillRectangle = fill(drawRectangle);
+export const fillLine = fill(drawLine);
+export const fillArc = fill(drawArc);
 
-export const strokePolygon = stroke(drawPolygon) as
-  (style: StrokeOptions, position: Vector2d, points: VectorList, angle: number) =>
-    void;
-export const strokeOval = stroke(drawOval) as
-  (style: StrokeOptions, position: Vector2d, points: VectorList, angle: number) =>
-    void;
-export const strokeRectangle = stroke(drawRectangle) as
-  (style: StrokeOptions, position: Vector2d, width: number, height: number, angle: number) =>
-    void;
-export const strokeLine = stroke(drawLine) as
-  (style: StrokeOptions, points: VectorList, angle: number) =>
-    void;
-export const strokeArc = stroke(drawArc) as
-  (style: StrokeOptions, vec: Vector2d, angle: number, radius: number, startAngle?: number, endAngle?: number, counterClockwise?: boolean) =>
-    void;
+export const strokePolygon = stroke(drawPolygon);
+export const strokeOval = stroke(drawOval);
+export const strokeRectangle = stroke(drawRectangle);
+export const strokeLine = stroke(drawLine);
+export const strokeArc = stroke(drawArc);
 
 export interface FontOptions {
   style?: string;
   font?: string;
-  textAlign?: string;
+  textAlign?: CanvasTextAlign;
   horizontalAlign?: boolean;
-  textBaseline?: string;
+  textBaseline?: CanvasTextBaseline;
   maxWidth?: number;
 }
 
 export const strokeText =
-  (fontOptions: FontOptions, vec: Vector2d, text: string, angle: number = 0) => {
+  (fontOptions: FontOptions, position: Vector2d, text: string, angle: number = 0) => {
 
     ctx.save();
 
-    ctx.strokeStyle = fontOptions.style || '';
-    ctx.font = fontOptions.font || ctx.font;
-    ctx.textAlign = fontOptions.textAlign || ctx.textAlign;
-    ctx.textBaseline = fontOptions.textBaseline || ctx.textBaseline;
+    ctx.strokeStyle = fontOptions.style ?? ctx.strokeStyle;
+    ctx.font = fontOptions.font ?? ctx.font;
+    ctx.textAlign = fontOptions.textAlign ?? ctx.textAlign;
+    ctx.textBaseline = fontOptions.textBaseline ?? ctx.textBaseline;
 
     rotate(angle);
 
@@ -235,8 +215,8 @@ export const strokeText =
 
     ctx.strokeText(
       text,
-      round(vec[0]),
-      round(vec[1]),
+      round(position[0]),
+      round(position[1]),
       fontOptions.maxWidth
     );
 
@@ -245,14 +225,14 @@ export const strokeText =
   };
 
 export const fillText =
-  (fontOptions: FontOptions, vec: Vector2d, text: string, angle: number = 0): void => {
+  (fontOptions: FontOptions, position: Vector2d, text: string, angle: number = 0): void => {
 
     ctx.save();
 
-    ctx.fillStyle = fontOptions.style || '';
-    ctx.font = fontOptions.font || ctx.font;
-    ctx.textAlign = fontOptions.textAlign || ctx.textAlign;
-    ctx.textBaseline = fontOptions.textBaseline || ctx.textBaseline;
+    ctx.fillStyle = fontOptions.style ?? fontOptions.style;
+    ctx.font = fontOptions.font ?? ctx.font;
+    ctx.textAlign = fontOptions.textAlign ?? ctx.textAlign;
+    ctx.textBaseline = fontOptions.textBaseline ?? ctx.textBaseline;
 
     rotate(angle);
 
@@ -263,11 +243,10 @@ export const fillText =
 
     ctx.fillText(
       text,
-      round(vec[0]),
-      round(vec[1]),
+      round(position[0]),
+      round(position[1]),
       fontOptions.maxWidth
     );
 
     ctx.restore();
-
   };
