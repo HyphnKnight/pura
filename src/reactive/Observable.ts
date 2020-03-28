@@ -26,11 +26,12 @@ export class Observable<T> {
         .catch((promiseError) => {
           subscriber.error(promiseError);
         })
-        .then(() => {
+        .finally(() => {
           subscriber.complete();
         });
     });
   }
+
   private isComplete = false;
   private readonly subscriptions = new Set<Subscriber<T> | NextFunction<T>>();
 
@@ -53,7 +54,7 @@ export class Observable<T> {
 
   private next(value: T) {
     if (this.isComplete) {
-      throw new Error('Attempted add a next value after the observble had already completed');
+      throw new Error('Attempted emit a new value after this observable had already completed');
     }
 
     this.subscriptions.forEach((subscription) => {
